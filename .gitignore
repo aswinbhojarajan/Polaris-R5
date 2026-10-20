@@ -1,0 +1,41 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Crawlee storage (contains session data, cookies)
+storage/
+.crawlee/
+
+# Playwright browsers (use system Chromium instead)
+playwright-browsers/
+.cache/ms-playwright/
+
+# PulseAudio runtime symlinks created by Chromium under Playwright.
+# These point at /tmp/pulse-XXXX dirs that get cleaned up on workflow
+# exit, leaving dangling symlinks that the deployment build warns about
+# ("Detected broken symlink") on every Repl layer push.
+.config/pulse/
+
+# Task #5 queue-monitor persisted streak/cooldown state
+.queue-monitor-state.json
+
+# Public exports must not include credentials or private workspace context.
+.env
+.env.*
+!.env.example
+.agents/
+.local/
+.config/
+generated-artifacts/
+*.log
+*.tsbuildinfo
+docs/migration/*.csv
+
+# Keep only reviewed application assets, not other uploaded files.
+attached_assets/*
+!attached_assets/Floral_Motif_21cd9196e9d1590723e1a7c44a04a36090f7a1e9_1778617279069.jpg
+!attached_assets/Icon_-_Kearney_Ignite_1778616793927.svg
+!attached_assets/Polaris_wordmark_+_compass_logo_1778616793927.svg

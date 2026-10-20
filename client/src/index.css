@@ -1,0 +1,118 @@
+@import './responsive.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(270, 50%, 20%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(270, 50%, 20%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(270, 50%, 20%);
+  --primary: hsl(252, 100%, 95%);
+  --primary-foreground: hsl(270, 50%, 20%);
+  --secondary: hsl(270, 50%, 96%);
+  --secondary-foreground: hsl(270, 50%, 20%);
+  --muted: hsl(0, 0%, 96%);
+  --muted-foreground: hsl(0, 0%, 45%);
+  --accent: hsl(270, 50%, 95%);
+  --accent-foreground: hsl(270, 50%, 20%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(0, 0%, 90%);
+  --input: hsl(0, 0%, 90%);
+  --ring: hsl(270, 50%, 40%);
+  --chart-1: hsl(270, 50%, 40%);
+  --chart-2: hsl(159.7826, 100%, 36.0784%);
+  --chart-3: hsl(42.0290, 92.8251%, 56.2745%);
+  --chart-4: hsl(147.1429, 78.5047%, 41.9608%);
+  --chart-5: hsl(341.4894, 75.2000%, 50.9804%);
+  --sidebar: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(270, 50%, 20%);
+  --sidebar-primary: hsl(252, 100%, 95%);
+  --sidebar-primary-foreground: hsl(270, 50%, 20%);
+  --sidebar-accent: hsl(270, 50%, 96%);
+  --sidebar-accent-foreground: hsl(270, 50%, 20%);
+  --sidebar-border: hsl(0, 0%, 90%);
+  --sidebar-ring: hsl(270, 50%, 40%);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 8px;
+}
+
+.dark {
+  --background: hsl(270, 50%, 8%);
+  --foreground: hsl(0, 0%, 98%);
+  --card: hsl(270, 50%, 10%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --popover: hsl(270, 50%, 10%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --primary: hsl(252, 100%, 95%);
+  --primary-foreground: hsl(270, 50%, 20%);
+  --secondary: hsl(270, 30%, 20%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(270, 30%, 20%);
+  --muted-foreground: hsl(0, 0%, 65%);
+  --accent: hsl(270, 30%, 20%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(270, 30%, 20%);
+  --input: hsl(270, 30%, 20%);
+  --ring: hsl(270, 50%, 40%);
+  --sidebar: hsl(270, 50%, 8%);
+  --sidebar-foreground: hsl(0, 0%, 98%);
+  --sidebar-primary: hsl(252, 100%, 95%);
+  --sidebar-primary-foreground: hsl(270, 50%, 20%);
+  --sidebar-accent: hsl(270, 30%, 20%);
+  --sidebar-accent-foreground: hsl(0, 0%, 98%);
+  --sidebar-border: hsl(270, 30%, 20%);
+  --sidebar-ring: hsl(270, 50%, 40%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+.nav-item {
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: hsl(252, 100%, 95%);
+}
+
+.nav-item.active {
+  background-color: hsl(252, 100%, 95%);
+  color: hsl(270, 50%, 20%);
+  font-weight: 600;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--background) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

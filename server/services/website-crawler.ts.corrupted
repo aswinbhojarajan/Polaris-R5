@@ -1,0 +1,317 @@
+ match or subdomain (e.g., docs.example.com for example.com)
+    const isExactMatch = urlDomain === baseDomain;
+    const isSubdomain = urlDomain.endsWith('.' + baseDomain);
+    
+    if (!isExactMatch && !isSubdomain) {
+      return false;
+    }
+    
+    const path = urlObj.pathname.toLowerCase();
+    
+    // Exclude file extensions and non-content URLs
+    const excludeExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.css', '.js', '.xml', '.json', '.zip', '.tar', '.gz'];
+    if (excludeExtensions.some(ext => path.endsWith(ext))) {
+      return false;
+    }
+    
+    // Exclude common non-content paths
+    const excludePatterns = [
+      '/blog/', '/news/', '/press/', '/events/', '/careers/', '/jobs/',
+      '/legal/', '/privacy/', '/terms/', '/cookie', '/login/', '/signin/', '/signup/', '/register/',
+      '/contact/', '/support/', '/help/', '/faq/', '/download/', '/downloads/',
+      '/cart/', '/checkout/', '/account/', '/profile/', '/search/', '/tag/', '/category/',
+      '/wp-admin/', '/wp-content/', '/admin/'
+    ];
+    
+    if (excludePatterns.some(pattern => path.includes(pattern))) {
+      return false;
+    }
+    
+    // Accept key content pages (use includes/startsWith for flexibility)
+    const priorityKeywords = [
+      'about', 'feature', 'pricing', 'price', 'plan', 'product', 'service', 
+      'solution', 'capability', 'overview', 'technology', 'platform',
+      'benefit', 'advantage', 'why', 'how-it-works', 'use-case'
+    ];
+    
+    // Allow homepage
+    if (path === '/' || path === '' || path === '/index' || path === '/home') {
+      return true;
+    }
+    
+    // Allow pages with priority keywords
+    if (priorityKeywords.some(keyword => path.includes(keyword))) {
+      return true;
+    }
+    
+    // Allow short paths (likely main navigation pages) but exclude deep paths
+    const pathSegments = path.split('/').filter(s => s.length > 0);
+    if (pathSegments.length <= 2) {
+      return true;
+    }
+    
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Crawls a website using CheerioCrawler (fast HTTP requests)
+ */
+async function crawlWithCheerio(websiteUrl: string): Promise<CrawledWebsiteContent> {
+  const pages: CrawledPage[] = [];
+  const crawledUrls = new Set<string>();
+  
+  console.log(`Starting Cheerio crawl for: ${websiteUrl}`);
+  
+  try {
+    const crawler = new CheerioCrawler({
+      maxRequestsPerCrawl: MAX_PAGES,
+      requestHandlerTimeoutSecs: REQUEST_TIMEOUT / 1000,
+      async requestHandler({ request, $, enqueueLinks }) {
+        const url = request.loadedUrl || request.url;
+        
+        // Skip if already crawled
+        if (crawledUrls.has(url)) {
+          return;
+        }
+        crawledUrls.add(url);
+        
+        console.log(`Crawling: ${url}`);
+        
+        // Extract page data
+        const title = $('title').text().trim() || $('h1').first().text().trim() || 'Untitled';
+        const content = extractCleanContent($);
+        const pageType = determinePageType(url);
+        
+        if (content && content.length > 100) {
+          pages.push({
+            url,
+            title,
+            content,
+            pageType
+          });
+          
+          console.log(`Extracted ${content.length} chars from ${pageType} page: ${title}`);
+        }
+        
+        // Enqueue relevant links if we haven't hit the max
+        if (pages.length < MAX_PAGES) {
+          await enqueueLinks({
+            globs: ['**'],
+            transformRequestFunction: (req) => {
+              if (!isRelevantUrl(req.url, websiteUrl)) {
+                return false;
+              }
+              return req;
+            }
+          });
+        }
+      },
+      failedRequestHandler({ request, error }) {
+        console.warn(`Cheerio failed to crawl ${request.url}:`, error instanceof Error ? error.message : String(error));
+      }
+    });
+    
+    await crawler.run([websiteUrl]);
+    
+    console.log(`Cheerio crawl completed. Extracted ${pages.length} pages.`);
+    
+    return {
+      pages,
+      totalPages: pages.length,
+      crawlMethod: 'cheerio'
+    };
+  } catch (error) {
+    console.error('Cheerio crawl error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crawls a website using PlaywrightCrawler (browser automation - fallback)
+ */
+async function crawlWithPlaywright(websiteUrl: string): Promise<CrawledWebsiteContent> {
+  const pages: CrawledPage[] = [];
+  const crawledUrls = new Set<string>();
+  
+  console.log(`Starting Playwright crawl for: ${websiteUrl}`);
+  
+  try {
+    const crawler = new PlaywrightCrawler({
+      maxRequestsPerCrawl: MAX_PAGES,
+      requestHandlerTimeoutSecs: REQUEST_TIMEOUT / 1000,
+      launchContext: {
+        launchOptions: {
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        }
+      },
+      async requestHandler({ request, page, enqueueLinks }) {
+        const url = request.loadedUrl || request.url;
+        
+        // Skip if already crawled
+        if (crawledUrls.has(url)) {
+          return;
+        }
+        crawledUrls.add(url);
+        
+        console.log(`Crawling with browser: ${url}`);
+        
+        // Wait for page to be fully loaded
+        await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+          console.log('Network idle timeout, continuing anyway...');
+        });
+        
+        // Extract page data
+        const title = await page.title() || 'Untitled';
+        const bodyHTML = await page.content();
+        const $ = cheerio.load(bodyHTML);
+        const content = extractCleanContent($);
+        const pageType = determinePageType(url);
+        
+        if (content && content.length > 100) {
+          pages.push({
+            url,
+            title,
+            content,
+            pageType
+          });
+          
+          console.log(`Extracted ${content.length} chars from ${pageType} page: ${title}`);
+        }
+        
+        // Enqueue relevant links if we haven't hit the max
+        if (pages.length < MAX_PAGES) {
+          await enqueueLinks({
+            globs: ['**'],
+            transformRequestFunction: (req) => {
+              if (!isRelevantUrl(req.url, websiteUrl)) {
+                return false;
+              }
+              return req;
+            }
+          });
+        }
+      },
+      failedRequestHandler({ request, error }) {
+        console.warn(`Playwright failed to crawl ${request.url}:`, error instanceof Error ? error.message : String(error));
+      }
+    });
+    
+    await crawler.run([websiteUrl]);
+    
+    console.log(`Playwright crawl completed. Extracted ${pages.length} pages.`);
+    
+    return {
+      pages,
+      totalPages: pages.length,
+      crawlMethod: 'playwright'
+    };
+  } catch (error) {
+    console.error('Playwright crawl error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Main function to crawl a website with fallback logic
+ * 1. Try CheerioCrawler (fast)
+ * 2. Fallback to PlaywrightCrawler if Cheerio fails or gets no content
+ * 3. Return error if both fail
+ */
+export async function crawlWebsite(websiteUrl: string): Promise<CrawledWebsiteContent> {
+  console.log(`\n=== Starting website crawl: ${websiteUrl} ===`);
+  
+  // Validate URL
+  try {
+    new URL(websiteUrl);
+  } catch {
+    return {
+      pages: [],
+      totalPages: 0,
+      crawlMethod: 'failed',
+      error: 'Invalid URL provided'
+    };
+  }
+  
+  // Try CheerioCrawler first (fast)
+  try {
+    const result = await crawlWithCheerio(websiteUrl);
+    
+    // Accept result if we got multiple pages with good content
+    if (result.pages.length >= 3) {
+      console.log(`✓ Cheerio crawl successful: ${result.pages.length} pages extracted`);
+      return result;
+    }
+    
+    // If we only got 1-2 pages, it's likely a JavaScript-heavy site
+    // Try Playwright to get more comprehensive coverage
+    console.log(`Cheerio crawl returned only ${result.pages.length} page(s) (likely JavaScript-heavy site), trying Playwright for better coverage...`);
+  } catch (error) {
+    console.log('Cheerio crawl failed, trying Playwright...', error);
+  }
+  
+  // Fallback to PlaywrightCrawler
+  try {
+    const result = await crawlWithPlaywright(websiteUrl);
+    
+    if (result.pages.length > 0) {
+      console.log(`✓ Playwright crawl successful: ${result.pages.length} pages extracted`);
+      return result;
+    }
+    
+    console.log('Playwright crawl returned no content');
+    return {
+      pages: [],
+      totalPages: 0,
+      crawlMethod: 'failed',
+      error: 'No content could be extracted from the website'
+    };
+  } catch (error) {
+    console.error('All crawl methods failed:', error);
+    return {
+      pages: [],
+      totalPages: 0,
+      crawlMethod: 'failed',
+      error: error instanceof Error ? error.message : 'Unknown crawl error'
+    };
+  }
+}
+
+/**
+ * Formats crawled content for LLM consumption
+ */
+export function formatCrawledContentForLLM(crawledContent: CrawledWebsiteContent): string {
+  if (crawledContent.pages.length === 0) {
+    return 'No website content could be extracted.';
+  }
+  
+  let formatted = `Website Content (${crawledContent.totalPages} pages crawled):\n\n`;
+  
+  // Group pages by type for better organization
+  const pagesByType = crawledContent.pages.reduce((acc, page) => {
+    if (!acc[page.pageType]) {
+      acc[page.pageType] = [];
+    }
+    acc[page.pageType].push(page);
+    return acc;
+  }, {} as Record<string, CrawledPage[]>);
+  
+  // Present in logical order
+  const typeOrder: CrawledPage['pageType'][] = ['homepage', 'about', 'features', 'products', 'services', 'solutions', 'pricing', 'other'];
+  
+  for (const type of typeOrder) {
+    const pagesOfType = pagesByType[type];
+    if (!pagesOfType || pagesOfType.length === 0) continue;
+    
+    for (const page of pagesOfType) {
+      formatted += `--- ${page.pageType.toUpperCase()}: ${page.title} ---\n`;
+      formatted += `URL: ${page.url}\n`;
+      formatted += `${page.content.substring(0, 3000)}\n\n`; // Limit each page to 3000 chars
+    }
+  }
+  
+  return formatted;
+}

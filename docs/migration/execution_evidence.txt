@@ -1,0 +1,27 @@
+== Task #7 re-migration from correct backup — Sun Aug  9 12:21:35 PM UTC 2026 ==
+source: Polaris-DEV-R2-Remix-3003_PROD_DBBK_v4_FINAL_CONSOLIDATED_DB_9_1786277556046.sql
+fb8c91f7c9182f9bd69acbfd28e3019763e04ea48bebfec1def2eb4366b4ce4c  attached_assets/Polaris-DEV-R2-Remix-3003_PROD_DBBK_v4_FINAL_CONSOLIDATED_DB_9_1786277556046.sql
+== revert: restored pre_migration_dev_backup_20260809.dump; dropped backup_import + migration_map (safety: pre_revert_backup_20260809_task7.dump) ==
+== staging: 98586 rows, 31 tables, 0 mismatches vs raw dump ==
+== prepare gates: RBAC, model/category identity (2 new models seeded), schema preflight, id-map ambiguity, name dedupe/collision — ALL PASSED; batches 109+18 ==
+== import: batches 1 and 2 complete; global snapshot UUID remap ==
+== validate ==
+psql:scripts/migration/04_validate.sql:144: NOTICE:  ALL GATE CHECKS PASSED
+DO
+== column audit ==
+TRANSFORMED (documented): clients.project_name
+TRANSFORMED (documented): clients.org_id
+TRANSFORMED (documented): report_snapshots.project_id
+EXCLUDED (documented): ai_models
+EXCLUDED (documented): organizations
+EXCLUDED (documented): prompt_categories
+EXCLUDED (documented): report_files
+EXCLUDED (documented): score_color_bands
+EXCLUDED (documented): score_interpretations
+OK: every backup column is copied by the import script or documented as excluded
+== post-import state ==
+total clients: 247
+backup-imported: 127
+active (all backup): 53
+active non-backup (must be 0): 0
+diageo active: 4
