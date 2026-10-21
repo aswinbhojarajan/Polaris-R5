@@ -1222,7 +1222,7 @@ export const COMMON_PASSWORDS = new Set<string>([
   "admin",
   "admin123",
   "changeme",
-  "[REMOVED: configure password in Replit Secrets]",
+  "changeme123",
   "iloveyou",
   "monkey",
   "dragon",
