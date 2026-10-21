@@ -3,6 +3,27 @@
 Running log of production-impacting issues and their resolutions. New
 entries go on top.
 
+## 2026-10-21 — Published Prompt Runs omit Web Search (resolved)
+
+The public main asset `/assets/index-BLJ1M47X.js` returned HTTP 200 at
+05:17:54 UTC but omitted the Web Search control, search configuration and
+evidence-route markers. This is a served-build mismatch; frontend inspection
+does not establish the effective production backend policy.
+
+The owner-restored workspace already contains the authentic R1A application
+implementation. No further rollback or application overwrite was performed.
+Fresh offline regressions (75/75), emitted-build guard tests (5/5) and production
+build pass. A build guard now rejects missing frontend/matching backend modules
+and emits a content identity for subsequent live comparison.
+
+**Post-publish update:** current asset `index-B747PyT8.js` contains the feature;
+production schema and approval checks pass. The served-build omission is fixed.
+Genuine production login and signed-in control checks now pass: both approved
+providers eligible, OFF default, unsupported-model blocking and normal OFF
+selection. Remaining native-answer/rerun/report UI coverage is documented
+separately rather than claimed as passed. See
+[release evidence](docs/audits/WebSearch/2026-10-21/R1A_RESTORED_CANDIDATE_2026-10-21.md).
+
 ## 2026-06-08 — Create-project wizard freezes on "Next" for first-time users (Task #132)
 
 **Symptom.** On production the Create Project wizard sometimes froze on

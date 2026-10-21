@@ -13,6 +13,54 @@ This document enumerates every place the codebase calls a model, with provider, 
 
 ## Provider abstraction layers
 
+### Opt-in native diagnostic search — R1A candidate, not activated
+
+`webSearchEnabled` is an optional strict boolean on the existing create-run API;
+omission/false preserves the legacy direct-vendor stack described below. ON runs
+instead use `server/services/native-web-search/` through the same run-ID queue.
+They retain exact selected identities and policy bounds at admission, enforce
+server-side model/account/environment eligibility again at dispatch, and
+checkpoint final answer text plus bounded native evidence before scoring.
+Native metadata never enters `answers.rawResponse` or analytical citations.
+
+OpenAI uses Responses `web_search`, capped at five built-in tool calls per
+response; Claude uses basic `web_search_20250305`
+with a five-use whole-item budget. Gemini's generateContent adapter remains
+fixture-only and independently blocks live analytical grounding pending
+applicable written rights and routing/display clearance. Search is
+model-directed, not a promise that every requested search run invokes a tool.
+Internal extraction/scoring/reporting calls are not given native search.
+
+Exact models are not publicly eligible merely because their catalog rows are
+enabled. An approved scoped internal cohort is required for initial paid
+validation; neither fixtures nor this implementation establish live support.
+See [release checkpoint](../docs/audits/WebSearch/2026-10-20/R1A_IMPLEMENTATION_AND_RELEASE_CHECKPOINT_2026-10-20.md).
+
+The [unpaid release-readiness pass](../docs/audits/WebSearch/2026-10-20/R1A_RELEASE_READINESS_2026-10-20.md)
+adds genuine cookie/CSRF/role checks and actual queued lifecycle/export tests with
+synthetic providers (55 passing tests). Pilot-scoped aliases/offset units do not
+grant public validation. Resource-write roles resolve the stored run's project,
+not a caller's selected-project hint. Provider metadata access succeeded for the
+two candidate models. After an initial accounting safety stop and explicit
+continuation approval, both providers completed the real development matrix,
+including native evidence, scoring, deliverables and exports. Claude's latest-
+version answer was stale in both its probe and inherited rerun; technical
+support is not a factual-freshness guarantee. Production metadata/schema have
+been read-only inspected; native execution remains unvalidated and inactive.
+The owner's production release scope requires both OpenAI and Claude. See the
+owner-accepted [Claude freshness limitation and frozen test](../docs/audits/WebSearch/2026-10-21/CLAUDE_FRESHNESS_INVESTIGATION_2026-10-21.md)
+and the
+[joint-release readiness recommendation](../docs/audits/WebSearch/2026-10-21/R1A_PRODUCTION_READINESS_AND_CLAUDE_DECISION_2026-10-21.md).
+See the [paid results](../docs/audits/WebSearch/2026-10-21/R1A_PAID_VALIDATION_RESULTS_2026-10-21.md).
+The cohort's declared spend ceiling is not an automatic billing cap.
+
+The [bounded development pilot](../docs/audits/WebSearch/2026-10-20/R1A_PAID_PILOT_PROPOSAL_2026-10-20.md)
+adds a separate, opt-in request guard covering both providers and downstream
+internal calls. It is not installed by normal application startup and must not
+be enabled without explicit paid approval. A budget-planning answer alone is not
+that approval. Uncertain wire outcomes and usage retain conservative allowance
+and stop further pilot dispatch; this is not a provider-wide account spend cap.
+
 Polaris has **two parallel LLM stacks**:
 
 1. **Provider-agnostic JSON-with-repair stack** — `server/llm/{client,openai,anthropic}.ts`. Used by **scoring, classification, mention/sentiment/ranking extraction, onboarding enrichment**. Forces JSON via system prompt + (OpenAI) `response_format: { type: 'json_object' }`. Single repair attempt on validation failure.

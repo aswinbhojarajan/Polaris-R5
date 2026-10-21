@@ -24,6 +24,7 @@ import { registerAdminJobRoutes } from "./admin-jobs";
 import { registerProjectSharingRoutes } from "./projects-sharing";
 import { registerActivityRoutes } from "./activity";
 import { requireAuth, requireTenantAccessIfPresent, requireRole } from "../auth";
+import { productionPilotFence, registerProductionPilotRoutes } from "./production-pilot";
 import { csrfTokenIssuer, csrfProtect } from "../middleware/csrf";
 import { forgotPasswordRateLimiter } from "../middleware/auth-rate-limit";
 import { countActiveUserSessions } from "../services/sessions";
@@ -118,6 +119,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (isPublicApiV1(req.path)) return next();
     return requireTenantAccessIfPresent()(req, res, next);
   });
+
+  app.use(productionPilotFence);
+  registerProductionPilotRoutes(app);
 
   // Public + authenticated credential routes (Task #18): forgot-password,
   // grant status/redeem, change-password.

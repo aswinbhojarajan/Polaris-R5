@@ -3,6 +3,7 @@ import { reportSnapshots, reportSections, reportJobs, reportFiles, InsertReportS
 import { aggregateSnapshotData, SnapshotData, ReportAggregator } from './report-snapshot';
 import { summarizeResponsesBatch, type PromptResponseSummary } from './response-summarizer';
 import { generateNarratives, generateDiagnosticAppendix, type GeneratedNarratives, type GeneratedAppendix } from './narrative-generator';
+import { appendNativeReportEvidence, nativeReportLinks } from './native-report-attribution';
 import { renderReportToPDF, renderAppendixToPDF } from './pdf-renderer';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 import path from 'path';
@@ -433,6 +434,16 @@ export async function processReportGeneration(
       }
     }
 
+    // Keep checkpoints raw; apply required attribution to both fresh and cached
+    // appendices, before section storage and PDF rendering.
+    if (appendixOutcome.ok) {
+      appendixOutcome = { ok: true, result: {
+        ...appendixOutcome.result,
+        diagnosticAppendix: appendNativeReportEvidence(
+          appendixOutcome.result.diagnosticAppendix, snapshotData),
+      } };
+    }
+
     // Step 6 of 8: Save report sections (75%)
     await updateProgress('rendering', 75, 'Step 6 of 8: Saving report sections', 'section_storage');
 
@@ -561,6 +572,7 @@ export async function processReportGeneration(
       ? renderAppendixToPDF(
           {
             appendixContent: appendixOutcome.result.diagnosticAppendix,
+            nativeSearchLinks: nativeReportLinks(snapshotData),
             clientName: clientContext.name,
             generatedDate,
             metadata: {
@@ -849,6 +861,8 @@ export async function regenerateAppendixForSnapshot(
       clientContext,
       openaiApiKey,
     );
+    const attributedAppendix = appendNativeReportEvidence(
+      appendixResult.diagnosticAppendix, snapshotData);
 
     const pdfDir = path.join(process.cwd(), 'generated_reports');
     await fs.mkdir(pdfDir, { recursive: true });
@@ -872,7 +886,8 @@ export async function regenerateAppendixForSnapshot(
 
     const appendixPdfResult = await renderAppendixToPDF(
       {
-        appendixContent: appendixResult.diagnosticAppendix,
+        appendixContent: attributedAppendix,
+        nativeSearchLinks: nativeReportLinks(snapshotData),
         clientName: clientContext.name,
         generatedDate: new Date().toISOString(),
         metadata: {
@@ -898,7 +913,7 @@ export async function regenerateAppendixForSnapshot(
     await db.insert(reportSections).values({
       snapshotId,
       sectionName: 'diagnostic_appendix',
-      sectionContent: normalizeMarkdownFormatting(appendixResult.diagnosticAppendix),
+      sectionContent: normalizeMarkdownFormatting(attributedAppendix),
       sectionOrder: 13,
     });
 

@@ -9,6 +9,9 @@ import { requireRole, assertClientAccess } from "../auth";
 import { canAccessInternalModels } from "../utils/internal-model-access";
 import { promptRunsLimiter } from "../middleware/rate-limit-expensive";
 import { ensureVendorPauseLoaded, isVendorPaused } from "../config/vendor-pause";
+import { admitNativeSearch } from "../services/native-web-search/admission";
+import { readSearchConfig, webSearchEnabledInput } from "../../shared/native-web-search";
+import { NativeSearchStore } from "../services/native-web-search/store";
 
 // Task #139 — A prompt run is "non-terminal" (still in flight / pausable /
 // stoppable) when in any of these states. 'paused' is non-terminal too:
@@ -88,6 +91,16 @@ async function computeIterationName(
 }
 
 export function registerPromptRunRoutes(app: Express) {
+  // A member role in a different selected project must not authorize writes to
+  // a run where the caller is only a viewer. Bind role checks to the resource.
+  const requireRunMember = requireRole({
+    minRole: "member", scope: "client",
+    resolveClientId: async req => {
+      const run = await storage.getPromptRun(req.params.id);
+      if (!run) throw new ApiError({ status: 404, code: "not_found", message: "Prompt run not found" });
+      return run.clientId;
+    },
+  });
   app.get("/api/v1/prompt-runs", async (req, res, next) => {
     try {
       const clientId = requireClientId(req, res);
@@ -144,6 +157,7 @@ export function registerPromptRunRoutes(app: Express) {
         // client/base so concurrent reruns can't collide on the same N.
         // `iterationOf` overrides any caller-supplied `name`.
         iterationOf: z.string().max(200).optional(),
+        webSearchEnabled: webSearchEnabledInput,
       });
 
       const parsed = schema.parse(req.body);
@@ -205,7 +219,28 @@ export function registerPromptRunRoutes(app: Express) {
         throw new ApiError({ status: 400, code: "unknown_prompt", message: `Prompt(s) not found for this client: ${foreignPrompts.join(", ")}` });
       }
 
+      let searchConfig;
+      try {
+        searchConfig = admitNativeSearch(parsed.webSearchEnabled,
+          modelIds.map(id => modelById.get(id)!), {
+            tenantId: clientId, userId: createdBy, isAdmin: canAccessInternalModels(req),
+            validation: canAccessInternalModels(req), itemCount: promptIds.length * modelIds.length,
+          });
+      } catch (error) {
+        throw new ApiError({ status: 400, code: "web_search_ineligible",
+          message: error instanceof Error ? error.message : "Web search is not available for this selection.",
+          details: { models: (error as { blocked?: unknown }).blocked } });
+      }
+
       const runId = crypto.randomUUID();
+      if (searchConfig.validationApprovals?.length) {
+        try {
+          await new NativeSearchStore().reserveValidation(searchConfig, runId, promptIds.length * modelIds.length);
+        } catch {
+          throw new ApiError({ status: 400, code: "web_search_ineligible",
+            message: "The approved internal validation allowance is exhausted or no longer applicable." });
+        }
+      }
       // Task #107: iterationOf wins over name (rerun flow); otherwise honour
       // the user-typed name; otherwise fall back to the compact auto-name.
       const runName = iterationOf
@@ -219,6 +254,7 @@ export function registerPromptRunRoutes(app: Express) {
         createdBy,
         totalPrompts: promptIds.length * modelIds.length,
         status: "queued",
+        searchConfig,
       });
 
       const items = [];
@@ -257,6 +293,20 @@ export function registerPromptRunRoutes(app: Express) {
     }
   });
 
+  app.get("/api/v1/prompt-runs/:id/search-evidence/:itemId", async (req, res, next) => {
+    try {
+      const run = await storage.getPromptRun(req.params.id);
+      if (!run) throw new ApiError({ status: 404, code: "not_found", message: "Prompt run not found" });
+      if (!(await assertClientAccess(req, res, run.clientId))) return;
+      const belongs = (await storage.getPromptRunItems(run.id)).some(i => i.id === req.params.itemId);
+      if (!belongs) throw new ApiError({ status: 404, code: "not_found", message: "Run item not found" });
+      if (!readSearchConfig(run.searchConfig).webSearch.enabled) return res.json({ phase: "off", evidence: null });
+      const execution = (await new NativeSearchStore().details(run.id, req.params.itemId))[0];
+      res.json({ ...(execution ?? { itemId: req.params.itemId, phase: "not_started", evidence: null, answerText: null }),
+        runStatus: run.status });
+    } catch (error) { next(error); }
+  });
+
   app.get("/api/v1/prompt-runs/:id", async (req, res, next) => {
     try {
       const run = await storage.getPromptRun(req.params.id);
@@ -270,7 +320,7 @@ export function registerPromptRunRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/v1/prompt-runs/:id", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.patch("/api/v1/prompt-runs/:id", requireRunMember, async (req, res, next) => {
     try {
       const schema = z.object({
         name: z
@@ -311,7 +361,8 @@ export function registerPromptRunRoutes(app: Express) {
       const items = await storage.getPromptRunItems(req.params.id);
       const promptIds = Array.from(new Set(items.map((i) => i.promptId)));
       const modelIds = Array.from(new Set(items.map((i) => i.modelId)));
-      res.json({ runId: run.id, promptIds, modelIds });
+      res.json({ runId: run.id, promptIds, modelIds,
+        webSearchEnabled: readSearchConfig(run.searchConfig).webSearch.enabled });
     } catch (error) {
       next(error);
     }
@@ -380,7 +431,7 @@ export function registerPromptRunRoutes(app: Express) {
     }
   });
 
-  app.post("/api/v1/prompt-runs/:id/recalculate-position", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.post("/api/v1/prompt-runs/:id/recalculate-position", requireRunMember, async (req, res, next) => {
     try {
       const { calculatePositionScoreV2 } = await import("../services/composer");
       const run = await storage.getPromptRun(req.params.id);
@@ -491,7 +542,7 @@ export function registerPromptRunRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/v1/prompt-runs/:id", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.delete("/api/v1/prompt-runs/:id", requireRunMember, async (req, res, next) => {
     try {
       const promptRunId = req.params.id;
       // Authz: bind the action to the run's own client (defends against IDOR
@@ -512,7 +563,7 @@ export function registerPromptRunRoutes(app: Express) {
     }
   });
 
-  app.post("/api/v1/prompt-runs/:id/stop", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.post("/api/v1/prompt-runs/:id/stop", requireRunMember, async (req, res, next) => {
     try {
       const promptRunId = req.params.id;
 
@@ -568,7 +619,7 @@ export function registerPromptRunRoutes(app: Express) {
   // Task #139 — True Pause. Suspend a queued/running run, preserving its
   // checkpoint + completed items so it can be resumed later without
   // re-paying for already-completed prompt-model combinations.
-  app.post("/api/v1/prompt-runs/:id/pause", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.post("/api/v1/prompt-runs/:id/pause", requireRunMember, async (req, res, next) => {
     try {
       const promptRunId = req.params.id;
       const run = await storage.getPromptRun(promptRunId);
@@ -599,7 +650,7 @@ export function registerPromptRunRoutes(app: Express) {
 
   // Task #139 — Resume a paused run. Re-queues the job; the executor reads
   // the preserved checkpoint and skips already-completed items.
-  app.post("/api/v1/prompt-runs/:id/resume", requireRole({ minRole: "member", scope: "client" }), async (req, res, next) => {
+  app.post("/api/v1/prompt-runs/:id/resume", requireRunMember, async (req, res, next) => {
     try {
       const promptRunId = req.params.id;
       const run = await storage.getPromptRun(promptRunId);

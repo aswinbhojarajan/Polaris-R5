@@ -21,6 +21,7 @@
 export const ERROR_CODES = {
   // 4xx — caller's fault
   bad_request: 400,
+  web_search_ineligible: 400,
   validation_failed: 422,
   unauthenticated: 401,
   forbidden: 403,

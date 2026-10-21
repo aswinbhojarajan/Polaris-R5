@@ -4,6 +4,168 @@ All notable platform-level changes to Polaris are recorded here, newest first. T
 
 For the full architectural context behind each change, see the corresponding sections in [`prd/00-documentation-index.md`](prd/00-documentation-index.md).
 
+## 2026-10-21 — R1A published control repair verified
+
+**Final acceptance:** genuine production form login and signed-in Start Prompt
+Run checks pass. Both exact approved models are eligible; OFF default,
+unsupported-model blocking and OFF restoring ordinary selection are verified.
+No paid run was submitted. Native answer/rerun/report UI coverage remains a
+documented follow-up limitation, not a claimed pass.
+
+**Post-publish update:** owner published; current served asset
+`index-B747PyT8.js` contains the Web Search feature. Fresh production schema
+check is clean; both exact provider approvals remain active and the pilot is
+closed. The earlier login blocker was subsequently resolved as described above.
+See the current candidate evidence linked below.
+
+Fresh isolated native-search tests pass **75/75**; compiled release-guard tests
+pass **5/5**; production build passes. Current typecheck still reports 75 errors
+and is not a clean gate. No application UI, scoring or provider behavior changed.
+Build now checks emitted frontend/backend feature presence and writes a public
+content fingerprint at `/release-build.json`. It does not certify runtime eligibility.
+
+The currently published asset still lacks Web Search. Previous production
+activation is historical evidence, not proof of present availability. Owner
+publishing, owner-authenticated production inspection and a genuine signed-in
+browser pass remain required. No new paid calls or production mutations were made.
+See [current candidate evidence](docs/audits/WebSearch/2026-10-21/R1A_RESTORED_CANDIDATE_2026-10-21.md).
+Older entries below describe earlier checkpoints, not the present release state.
+
+## 2026-10-21 — Production pilot controls staged; R1A not yet activated
+
+The owner approved a fresh shared $50 production pilot and conditional joint
+OpenAI/Claude activation after all gates pass. Added durable pre-dispatch
+reservations, full-executor/SDK retry accounting, isolated temporary operator
+scope, expiry/restart/uncertainty stops and a narrow evidence-gated joint
+activation operation. Non-worker operator HTTP helpers are fenced against
+unmetered generation; ordinary production traffic is outside this validation cap.
+Public approvals remain empty. Production controls require another owner
+Publish; no production paid calls or activation have occurred.
+
+Publish preview is additive only: one bounded budget table, no removals or
+warnings. Existing native-search checks and foreign-key names are explicitly
+preserved in the schema definition. See
+[production pilot controls](docs/audits/WebSearch/2026-10-21/R1A_PRODUCTION_PILOT_CONTROLS_2026-10-21.md).
+
+## 2026-10-21 — OpenAI/Claude live development matrix complete; freshness caveat
+
+**Published OFF checkpoint:** owner publishing is complete. The live build
+contains Web Search UI, health/page/asset checks return 200, production has all
+three required structures and the managed schema preview has no remaining diff.
+Native configuration remains absent/OFF. No paid production calls or activation
+were performed. Production pilot approval/enforcement and final acceptance
+remain open.
+
+**Report release checks:** repaired native provenance in fresh/cached/retried
+technical appendices, including safe clickable PDF citations. Actual Chromium
+rendering and authenticated historical snapshot/PDF retrieval after source-run
+deletion pass in the private unpaid integration suite. Canonical/scoring data
+is unchanged; legacy OFF output remains unchanged. Final affected routes/PDF
+suite passes 6/6; build passes; accepted typecheck debt remains. No production
+mutation or paid call was made. Recovery confirmation, owner publishing,
+production validation, final browser acceptance and activation remain open.
+See the [Publish gate checkpoint](docs/audits/WebSearch/2026-10-21/R1A_REPORT_VERIFICATION_AND_PUBLISH_GATE_2026-10-21.md).
+
+**Claude quality acceptance:** owner accepted the documented latest-version
+freshness limitation while retaining both providers. The exact prompt, system
+message, reconstructed parameters and both complete saved canonical responses
+are archived in the [investigation record](docs/audits/WebSearch/2026-10-21/CLAUDE_FRESHNESS_INVESTIGATION_2026-10-21.md)
+and companion JSON. No new calls or production changes were made; quality
+acceptance is not publishing/activation/spending authorization.
+
+**Read-only production follow-up:** owner-approved inspection now succeeds.
+The public VM is healthy, but published UI/schema are pre-R1A. Publish preview
+contains eight additive statements without destructive warnings. Both target
+models are enabled in the catalog; native configuration is absent and no
+activation occurred. Recommend retaining Claude in the required joint release
+with its freshness limitation documented, contingent on remaining verification
+and production approvals. See
+[production readiness and Claude decision](docs/audits/WebSearch/2026-10-21/R1A_PRODUCTION_READINESS_AND_CLAUDE_DECISION_2026-10-21.md).
+
+After explicit continuation approval, all eight real queued runs and ten
+diagnostics completed for OpenAI then Claude, including inherited-ON and
+explicit-OFF cases. Native evidence, scoring, recommendations, drafts and actual
+CSV/JSON exports were exercised. Combined conservative debit across both
+windows: $7.149218, 234 provider requests, zero unsettled dispatches.
+
+Claude invoked native search but its latest-version probe and inherited rerun
+selected an outdated Firefox release. Technical integration passes; freshness
+does not. Answers were not rewritten and no extra paid retry was performed.
+Operators were disabled, cookie files removed, temporary policy settings cleared
+and normal startup restored. Public search remains OFF; production was not
+inspected, changed or activated. See
+[paid results and outstanding gates](docs/audits/WebSearch/2026-10-21/R1A_PAID_VALIDATION_RESULTS_2026-10-21.md).
+
+## 2026-10-20 — First live OpenAI Web Search probe; pilot paused safely
+
+The owner approved the shared $50 development pilot. One Terra native probe
+invoked live search and persisted sources/citation evidence. The spending guard
+then stopped before a downstream call omitting an output-token bound. Four
+dispatched requests settled to a conservative $0.430336 debit; Claude did not
+run. Core `done` is not a full pass: fallback scoring and final deliverables
+need attention. Production remains untouched.
+
+Corrected pilot-only accounting for ordinary OpenAI calls without explicit
+limits by reserving the published model maximum, without changing request
+payloads or scoring semantics. Eleven focused synthetic budget tests pass;
+typecheck remains at the same 75 baseline diagnostics. Fixed local JSON-export
+serialization and collected actual CSV/JSON evidence without more generation.
+Restored normal startup, removed temporary development settings, disabled the
+isolated operator and removed its private cookie file. The original stopped
+ledger is retained; a proposed $49.56 continuation requires revised approval.
+See the [live checkpoint](docs/audits/WebSearch/2026-10-20/R1A_LIVE_PILOT_CHECKPOINT_2026-10-20.md).
+
+## 2026-10-20 — Bounded Web Search pilot preparation
+
+The owner selected a $50 **planning** ceiling, not paid-call approval. Added an
+opt-in development-only pilot launcher with durable conservative reservations
+before provider HTTP dispatch, accounting for native/OFF calls and internal
+SDK/retry/repair traffic. Uncertain outcomes retain allowance and halt further
+dispatch; restarts/deletions do not refill it. Normal development startup remains
+unguarded and public native search remains disabled. OpenAI native Responses
+now explicitly caps built-in tool calls at five per response.
+
+65 unpaid tests pass, including real SDK transport inheritance using synthetic
+HTTP. Build passes; typecheck remains at the same 75 pre-existing diagnostics.
+No paid pilot, production change or publishing was performed.
+See [the staged pilot, cost assumptions and approval gates](docs/audits/WebSearch/2026-10-20/R1A_PAID_PILOT_PROPOSAL_2026-10-20.md).
+
+## 2026-10-20 — Web Search R1A unpaid release-readiness checks
+
+**Still not a production release.** Real cookie login, CSRF, actual registered
+routes, queue execution, inherited reruns, CSV/JSON exports, pause/resume and
+membership revocation are exercised against disposable PostgreSQL with synthetic
+provider responses. The isolated suite now passes 55 tests; build passes.
+Typecheck remains red at 75 pre-existing diagnostics, down from the accepted 76.
+
+Pilot-only alias/Unicode policy no longer requires a public validation approval.
+Prompt Run write roles are bound to the stored run's project, preventing a role
+from another selected project from authorizing viewer-only changes. An undeclared
+OpenAPI error-handler argument was also fixed.
+
+Exact-model provider metadata checks succeeded, but no paid generation or search
+validation occurred. Production inspection was denied for lack of authenticated
+production access. Budget planning, paid approval, actual validation and separate
+production release gates remain pending.
+See [readiness evidence and remaining gates](docs/audits/WebSearch/2026-10-20/R1A_RELEASE_READINESS_2026-10-20.md).
+
+## 2026-10-20 — Prompt Runs native web search: R1A implementation candidate
+
+**Not a production release or exact-model live validation.** Opt-in default-OFF
+search is integrated into run admission, immutable configuration, the existing
+queue, durable per-item generation, fenced atomic client scoring, approved run
+controls and Answer Details, and attributed text/CSV/JSON exports. OpenAI and
+Claude have native adapters; Gemini has fixtures and an independent live-use
+block pending applicable rights and identity/display clearance. Legacy OFF
+execution and scorer semantics are retained.
+
+The additive development migration is applied; production is untouched.
+The isolated native-search suite passes 49 tests. The application builds;
+the full typecheck remains red on pre-existing diagnostics. The owner explicitly
+accepted that baseline exception for this R1A candidate on 2026-10-20; this does
+not approve paid validation or production activation.
+See [implementation, evidence and release gates](docs/audits/WebSearch/2026-10-20/R1A_IMPLEMENTATION_AND_RELEASE_CHECKPOINT_2026-10-20.md).
+
 ## 2026-06-08 — Holistic error & notification UX (Task #131)
 
 Frontend-only pass to make error messages, prompts, and notifications
@@ -1342,7 +1504,7 @@ The four-role hierarchy (viewer < member < admin < owner) is now three roles (vi
 Operator impact:
 
 - **Bug fix**: `POST /api/v1/auth/login` and `POST /api/v1/auth/register` now return the same `{ user, orgIds, memberships }` shape as `GET /api/v1/auth/me`. Previously they omitted `memberships`, and the frontend's login mutation cached that incomplete payload — which made `useRole().canAdmin` resolve to `false` even for owners and hid the sidebar's Admin section until a hard refresh. Files: `server/auth.ts`.
-- **Sample users for local QA**: `server/seed.ts` now seeds one user per RBAC role in `default-org` (idempotent). All share the password `[REMOVED: configure password in Replit Secrets]`:
+- **Sample users for local QA**: `server/seed.ts` seeds one user per RBAC role in `default-org` (idempotent). New users require `SAMPLE_USER_PASSWORD` in Replit Secrets:
   - `owner@polaris.local` → `owner`
   - `adminuser@polaris.local` → `admin` (note: the bootstrap `admin@polaris.local` row was originally seeded as `owner`; after the May 2026 role-merge it is `admin`)
   - `member@polaris.local` → `member`
@@ -1447,7 +1609,7 @@ Operator impact:
 
 - `/api/v1/*` is no longer anonymously accessible. Email/password login (`POST /api/v1/auth/login`) issues a 7-day cookie session (`polaris.sid`, `httpOnly`, `sameSite=lax`, `secure` in prod). Passwords are hashed with Node's built-in `scrypt`.
 - New tables `users` and `user_org_memberships` (plus enum `user_role_enum`) drive per-tenant authorization: a request for an org or client the caller doesn't belong to returns `403`.
-- A bootstrap admin (`admin@polaris.local` / `[REMOVED: configure password in Replit Secrets]`) is seeded into `default-org` so a fresh database is immediately usable. Override with `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD`. **Change the default password before any non-dev deploy.**
+- A bootstrap admin (`admin@polaris.local`) is seeded into `default-org` using `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` from Replit Secrets. No default password is included in this public export.
 - The frontend now has a `/login` page; `ProtectedRoute` calls `GET /api/v1/auth/me` and redirects to `/login` on 401.
 - `SESSION_SECRET` is now required in production (a dev fallback exists). Sessions are stored in `memorystore` — they evaporate on restart and cannot horizontally scale (tracked as `prd/20-` H7).
 

@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { ApiError } from "../utils/api-error";
 import { z } from "zod";
 import { storage } from "../storage";
@@ -20,6 +20,7 @@ import {
   isVendorPaused,
 } from "../config/vendor-pause";
 import { canAccessInternalModels } from "../utils/internal-model-access";
+import { getSearchEligibility, loadSearchPolicy } from "../services/native-web-search/policy";
 
 // Map vendor → env var that powers the executor for that provider.
 // Surfaced to the admin Providers panel so a "no key configured" state
@@ -55,13 +56,19 @@ const updateEnabledSchema = z.object({
   reason: z.string().trim().max(500).optional(),
 });
 
-function annotateKeyAvailability<T extends AiModel>(models: T[]) {
+function annotateKeyAvailability<T extends AiModel>(models: T[], req?: Request) {
+  const searchPolicy = loadSearchPolicy();
   const hasOpenAiKey = !!process.env.OPENAI_API_KEY;
   const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
   const hasGoogleKey = !!process.env.GOOGLE_API_KEY;
   const hasPerplexityKey = !!process.env.PERPLEXITY_API_KEY;
   return models.map((model) => ({
     ...model,
+    webSearch: getSearchEligibility(model, searchPolicy, req ? {
+      userId: (req.user as { id?: string })?.id ?? "",
+      tenantId: String(req.query.clientId ?? req.headers["x-client-id"] ?? ""),
+      isAdmin: canAccessInternalModels(req), validation: canAccessInternalModels(req), itemCount: 1,
+    } : undefined),
     isKeyAvailable:
       (model.vendor === "OpenAI" && hasOpenAiKey) ||
       (model.vendor === "Anthropic" && hasAnthropicKey) ||
@@ -90,7 +97,7 @@ export function registerAiModelRoutes(app: Express) {
       const filtered = models.filter(
         (m) => !isVendorPaused(m.vendor) && (canAccessInternalModels(req) || !m.internalOnly),
       );
-      res.json(annotateKeyAvailability(filtered));
+      res.json(annotateKeyAvailability(filtered, req));
     } catch (error) {
       next(error);
     }
@@ -102,11 +109,11 @@ export function registerAiModelRoutes(app: Express) {
   app.get(
     "/api/v1/admin/ai-models",
     requireRole({ minRole: "admin", scope: "none" }),
-    async (_req, res, next) => {
+    async (req, res, next) => {
       try {
         await ensureVendorPauseLoaded();
         const models = await storage.getAllAiModels();
-        res.json(annotateKeyAvailability(models));
+        res.json(annotateKeyAvailability(models, req));
       } catch (error) {
         next(error);
       }

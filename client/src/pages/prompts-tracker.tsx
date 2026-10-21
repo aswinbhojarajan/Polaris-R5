@@ -162,7 +162,7 @@ export default function PromptsTracker() {
       'queued_for_benchmarking',
       'benchmarking',
     ]);
-    const TERMINAL = new Set(['done', 'failed', 'stopped', 'cancelled', 'error']);
+    const TERMINAL = new Set(['done', 'completed_with_errors', 'failed', 'stopped', 'cancelled', 'error', 'paused']);
 
     promptRuns.forEach((run) => {
       const previousStatus = previousRunsRef.current[run.id];
@@ -274,6 +274,7 @@ export default function PromptsTracker() {
     runId: string;
     promptIds: string[];
     modelIds: string[];
+    webSearchEnabled: boolean;
   };
   const rerunSelectionsQueryKey = (runId: string) =>
     ['/api/v1/prompt-runs', runId, 'selections'] as const;
@@ -318,10 +319,12 @@ export default function PromptsTracker() {
           queryFn: () => fetchRerunSelections(source.id),
         });
       }
+      if (!selections) throw new Error("Source run selections could not be loaded.");
       const res = await apiRequest('POST', '/api/v1/prompt-runs', {
         clientId: source.clientId,
         promptIds: selections.promptIds,
         modelIds: selections.modelIds,
+        webSearchEnabled: selections.webSearchEnabled === true,
         iterationOf: stripIterationSuffix(source.name) || source.name,
       });
       return res.json() as Promise<{ run: PromptRun }>;
@@ -926,6 +929,8 @@ export default function PromptsTracker() {
                 )}
                 {rerunRun && (
                   <div>
+                    <p className="mb-2 text-sm">Web search: <strong>{rerunSelections?.webSearchEnabled ? "ON" : "OFF"}</strong>.
+                      {" "}This setting is inherited; answers and search results are generated again under current eligibility and policy.</p>
                     <span className="text-muted-foreground">New run name preview:</span>{" "}
                     <span className="font-mono text-foreground" data-testid={`text-rerun-name-preview-${rerunRun.id}`}>
                       {previewIterationName(rerunRun.name)}

@@ -71,7 +71,7 @@ Single source of truth: `server/config/llm-functions.ts`. Each of the 14 interna
 > For full per-task narratives (what / why / how / files), see `CHANGELOG.md` and `COMPREHENSIVE_TECHNICAL_CHANGELOG.md`.
 
 ## Gotchas
-- **Production URL**: `https://polaris-r3.ignitelabs.online` (vm-target deploy, runs `npm run start` → `NODE_ENV=production node dist/index.js`).
+- **Production URL**: obtain the current URL from live deployment metadata; historical fork URLs may be stale. VM-target deploy runs `npm run start` → `NODE_ENV=production node dist/index.js`.
 - **Dev and prod use separate Neon databases.** The dev workflow's `DATABASE_URL` and the prod VM's `DATABASE_URL` point at different Neon DBs. Project renames, prompt runs, topics, and uploads created on one do NOT appear on the other. (Caught us once: "Masafi looks empty in prod" — data lived only in dev DB.) Production data must be created against the production deployment.
 - **`.config/pulse/` is in `.gitignore`** because Chromium-under-Playwright creates PulseAudio runtime symlinks pointing at `/tmp/pulse-XXXX` dirs cleaned up on workflow exit. Without the ignore, every Repl layer push warned `Detected broken symlink`.
 - **`.replit` is the source of truth for deploy config** (vm target, build/run commands, port mapping). Do not move start commands into `package.json` scripts assumptions.

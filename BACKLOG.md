@@ -3,6 +3,63 @@
 Tracks deferred work that is not blocking but should be picked up in a
 following iteration.
 
+## Prompt Runs Web Search release sequence
+
+**Current status (2026-10-21):** the candidate passes offline tests/build and has
+now been owner-published. Served JS contains Web Search; fresh production schema
+and approval inspection pass. Genuine production login, effective eligibility
+and signed-in ON/OFF control checks now pass; the published-control repair is
+verified. Remaining coverage: native-answer/rerun UI and report downloads in
+production (no native runs were visible to the verification account). Earlier
+pilot notes below are historical checkpoints; do not reset closed allowances
+or repeat paid calls.
+See [current evidence and remaining gates](docs/audits/WebSearch/2026-10-21/R1A_RESTORED_CANDIDATE_2026-10-21.md).
+
+- **R1A activation hold:** both exact provider combinations completed the real
+  development integration matrix: eight runs, ten diagnostics, native evidence,
+  scoring and deliverables. Claude's latest-version probe and inherited rerun
+  were stale; its freshness check is not a pass and needs an explicit release
+  decision. Combined conservative debit: $7.149218 across both windows, no
+  unsettled dispatches. Public search is OFF, temporary cohorts removed,
+  operators disabled and ledgers preserved.
+  [Paid results](docs/audits/WebSearch/2026-10-21/R1A_PAID_VALIDATION_RESULTS_2026-10-21.md).
+  Remaining: focused genuine browser/report checks and separately approved
+  production schema/publish/cohort-spend/activation gates.
+  Read-only production inspection is now complete: live app healthy but R1A
+  schema/UI absent; Publish preview is eight additive statements, no destructive
+  warnings. **Joint OpenAI + Claude release required**; owner accepted Claude's
+  documented freshness limitation, subject to production acceptance/approval.
+  [Readiness decision](docs/audits/WebSearch/2026-10-21/R1A_PRODUCTION_READINESS_AND_CLAUDE_DECISION_2026-10-21.md).
+  PDF attribution/retention checks are now closed: deterministic source-bearing
+  appendices, clickable native PDF citations and historical downloads after run
+  deletion are verified without paid calls. Final genuine browser acceptance
+  remains a pre-activation gate. Recovery confirmation and owner publishing are
+  complete; live artifact/schema parity is verified with native search OFF.
+  The owner approved a fresh shared $50 production ceiling and conditional
+  joint activation. Durable isolated controls are implemented and verified
+  offline; the private-pilot configuration is staged with public approvals
+  empty. The next owner Publish adds one bounded budget table only, preserving
+  existing constraints and production data. Both-provider production validation,
+  final genuine browser acceptance and activation remain pending.
+  [Publish gate](docs/audits/WebSearch/2026-10-21/R1A_REPORT_VERIFICATION_AND_PUBLISH_GATE_2026-10-21.md).
+  Owner-authenticated
+  production inspection, user publishing and activation remain separate gates.
+  See [latest readiness checkpoint](docs/audits/WebSearch/2026-10-20/R1A_RELEASE_READINESS_2026-10-20.md).
+- **R1B — Gemini readiness:** obtain applicable written rights for analytical
+  use, retained attribution and reporting; resolve exact model routing,
+  Search Suggestions rendering and retention/deletion before allowing live
+  grounded calls. Fixtures are not live support.
+- **R1.1 — Measured reliability and budgets:** use approved pilot telemetry to
+  tune deadlines, concurrency and retry budgets; add operational search/cost
+  observability without introducing source-authority scoring or changing
+  diagnostic score semantics.
+- **Existing typecheck debt:** 91 baseline diagnostics, reduced to 75 during
+  narrowly related integration repairs. The repository-wide check is not green;
+  do not describe the remaining failures as native-search validation success.
+
+Detailed gates, recovery limits and follow-on acceptance:
+[R1A implementation checkpoint](docs/audits/WebSearch/2026-10-20/R1A_IMPLEMENTATION_AND_RELEASE_CHECKPOINT_2026-10-20.md).
+
 ## AI model lifecycle follow-ups (Tasks #67 / #73 / #77 / #78 / #79)
 
 - **#80 — Honor the vendor pause switch for background AI work too.**

@@ -28,7 +28,7 @@ interface CompetitorScoreResult {
 /**
  * Score a single competitor against all answers for a prompt
  */
-async function scoreCompetitorForPrompt(
+export async function scoreCompetitorForPrompt(
   comp: DiscoveredCompetitor,
   answersForPrompt: Array<{ item: any; answer: any }>,
   promptText: string,

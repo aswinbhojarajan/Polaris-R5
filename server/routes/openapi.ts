@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { OpenAPIObject } from "openapi3-ts/oas30";
 import { z } from "zod";
+import { searchEvidenceSchema, webSearchEnabledInput } from "../../shared/native-web-search";
 import {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
@@ -49,6 +50,20 @@ export function buildOpenApiDocument(): OpenAPIObject {
   if (cachedDocument) return cachedDocument;
 
   const registry = new OpenAPIRegistry();
+  registry.registerPath({
+    method: "get",
+    path: "/api/v1/prompt-runs/{id}/search-evidence/{itemId}",
+    tags: ["prompt-runs"],
+    parameters: [
+      { name: "id", in: "path", required: true, schema: { type: "string" } },
+      { name: "itemId", in: "path", required: true, schema: { type: "string" } },
+    ],
+    responses: { 200: { description: "Authorized bounded native-search item evidence, including failures without an answer",
+      content: { "application/json": { schema: z.object({
+        itemId: z.string().optional(), phase: z.string(), evidence: searchEvidenceSchema.nullable(),
+        answerText: z.string().max(250000).nullable().optional(), runStatus: z.string().optional(),
+      }) } } } },
+  });
 
   // ---- Reusable schemas ----
   const ErrorResponseSchema = registry.register(
@@ -77,6 +92,9 @@ export function buildOpenApiDocument(): OpenAPIObject {
       .extend({
         id: z.string(),
         isKeyAvailable: z.boolean(),
+        webSearch: z.object({
+          eligible: z.boolean(), reason: z.string(), message: z.string(), policyVersion: z.string(),
+        }),
       })
       .openapi("AiModelWithStatus"),
   );
@@ -149,6 +167,16 @@ export function buildOpenApiDocument(): OpenAPIObject {
   });
 
   // ---- Reusable response schemas ----
+  registry.registerPath({
+    method: "get",
+    path: "/api/v1/prompt-runs/{id}/selections",
+    tags: ["prompt-runs"],
+    parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+    responses: ok("Current rerun selections and inherited search mode", z.object({
+      runId: z.string(), promptIds: z.array(z.string()), modelIds: z.array(z.string()),
+      webSearchEnabled: z.boolean(),
+    })),
+  });
   const JobStatusEnum = z
     .enum(["queued", "running", "done", "error", "failed"])
     .or(z.string());
@@ -751,6 +779,8 @@ export function buildOpenApiDocument(): OpenAPIObject {
               modelIds: z.array(z.string()),
               createdBy: z.string().optional(),
               name: z.string().max(200).optional(),
+              iterationOf: z.string().max(200).optional(),
+              webSearchEnabled: webSearchEnabledInput,
             }),
           },
         },
@@ -2448,7 +2478,7 @@ const SWAGGER_HTML = `<!doctype html>
 </html>`;
 
 export function registerOpenApiRoutes(app: Express) {
-  app.get("/openapi.json", (_req, res) => {
+  app.get("/openapi.json", (_req, res, next) => {
     try {
       const doc = buildOpenApiDocument();
       res.setHeader("Cache-Control", "public, max-age=300");

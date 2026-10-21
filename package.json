@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "vite build --manifest && esbuild server/bootstrap.ts --platform=node --packages=external --bundle --format=esm --splitting --entry-names=index --outdir=dist --metafile=dist/server-meta.json && node scripts/verify-release-build.mjs",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
+    "test:native-search": "bash scripts/test-native-web-search.sh",
+    "test:release-build": "node --test scripts/verify-release-build.test.mjs",
     "db:push": "drizzle-kit push",
     "postinstall": "PLAYWRIGHT_BROWSERS_PATH=./playwright-browsers npx playwright install chromium chromium-headless-shell"
   },

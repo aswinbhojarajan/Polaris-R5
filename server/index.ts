@@ -14,6 +14,7 @@ import { runPdfSelfTest } from "./services/pdf-self-test";
 import { pool } from "./db";
 import type { Server } from "http";
 import { setupAuth } from "./auth";
+import { initializeProductionPilot } from "./services/pilot-budget/production-runtime";
 
 const app = express();
 
@@ -135,6 +136,11 @@ app.use((req, res, next) => {
 (async () => {
   // Seed database with default data (organisation, models, default admin user, etc.)
   await seedDatabase();
+  // Approved fixture data only; schema is applied exclusively by managed Publish.
+  // An unavailable pilot is explicitly closed, without taking ordinary CRUD down.
+  await initializeProductionPilot().catch(() => {
+    console.error("[R1A production pilot] initialization failed; native pilot remains closed");
+  });
 
   // Task #59 — One-shot sweep of prompt_runs stuck in a non-terminal
   // status from a previous (crashed / restarted) process. Without this,

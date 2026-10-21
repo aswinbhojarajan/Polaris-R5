@@ -1,3 +1,7 @@
+import { NativeSearchAnswer } from "./native-search-answer";
+import { formatNativeAnswerForDisplay } from "@shared/native-search-display";
+import type { SearchEvidence } from "@shared/native-web-search";
+import type { PromptRun } from "@shared/schema";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -112,6 +116,19 @@ export function RunDetailsSection({ runId, onBack }: RunDetailsSectionProps) {
 
       const benchmarkData = await response.json();
       const promptGroups = groupByPrompt();
+      const nativeEvidence = new Map<string, SearchEvidence>();
+      if ((run as any)?.searchConfig?.webSearch?.enabled) {
+        await Promise.all(promptGroups.flatMap((group: any) => group.results).map(async (result: any) => {
+          if (!result.answer?.rawResponse) return;
+          const response = await fetch(`/api/v1/prompt-runs/${runId}/search-evidence/${result.item.id}`, { credentials: "include" });
+          if (!response.ok) throw new Error("Required native attribution could not be loaded; export stopped.");
+          const detail = await response.json();
+          if (!detail.evidence) throw new Error("Required native attribution is missing; export stopped.");
+          // Formatting validates the exact saved answer and its inline mapping.
+          formatNativeAnswerForDisplay(result.answer.rawResponse, detail.evidence);
+          nativeEvidence.set(result.item.id, detail.evidence);
+        }));
+      }
 
       let exportText = `POLARIS AI - FULL EXPORT REPORT\n`;
       exportText += `Run ID: ${runId?.substring(0, 8)}\n`;
@@ -190,7 +207,8 @@ export function RunDetailsSection({ runId, onBack }: RunDetailsSectionProps) {
           exportText += `S: ${(Number(answer.sentimentScore) || 0).toFixed(1)} | `;
           exportText += `P: ${(Number(answer.positionScore) || 0).toFixed(1)}\n\n`;
 
-          exportText += `FULL RESPONSE:\n${answer.rawResponse || "No response"}\n\n`;
+          exportText += `FULL RESPONSE:\n${answer.rawResponse ?
+            formatNativeAnswerForDisplay(answer.rawResponse, nativeEvidence.get(result.item.id)) : "No response"}\n\n`;
 
           if (result.mentions?.length > 0) {
             exportText += `MENTIONS (${result.mentions.length}):\n`;
@@ -256,7 +274,7 @@ export function RunDetailsSection({ runId, onBack }: RunDetailsSectionProps) {
     enabled: !!selectedClientId,
   });
 
-  type RunResultsResponse = { run?: { status?: string } & Record<string, unknown>; results?: unknown[] } & Record<string, unknown>;
+  type RunResultsResponse = { run?: Omit<PromptRun, "createdAt"> & { createdAt: string }; results?: unknown[] } & Record<string, unknown>;
   const { data: runData, isLoading } = useQuery<RunResultsResponse>({
     queryKey: ["/api/v1/prompt-runs", runId, "results", selectedClientId],
     queryFn: async () => {
@@ -273,7 +291,7 @@ export function RunDetailsSection({ runId, onBack }: RunDetailsSectionProps) {
     refetchInterval: (query) => {
       const status = query.state.data?.run?.status;
       if (!status) return false;
-      const terminal = ['done', 'failed', 'stopped', 'cancelled', 'error'];
+      const terminal = ['done', 'completed_with_errors', 'failed', 'stopped', 'cancelled', 'error', 'paused'];
       return terminal.includes(status) ? false : 5000;
     },
   });
@@ -1243,18 +1261,19 @@ export function RunDetailsSection({ runId, onBack }: RunDetailsSectionProps) {
                                   <AccordionContent className="px-4 pb-4">
                                     <div className="space-y-3 pt-2">
                                       {/* Full Response */}
-                                      {result.answer?.rawResponse && (
+                                      {(result.answer?.rawResponse || (run as any)?.searchConfig?.webSearch?.enabled) && (
                                         <div>
                                           <p className="text-xs text-muted-foreground mb-2 font-medium">
                                             FULL ASSISTANT RESPONSE
                                           </p>
                                           <div className="bg-muted/50 px-3 py-2 rounded-md max-h-64 overflow-y-auto">
-                                            <p
+                                            <div
                                               className="text-xs whitespace-pre-wrap"
                                               data-testid={`text-response-${groupIndex}-${modelIndex}`}
                                             >
-                                              {result.answer.rawResponse}
-                                            </p>
+                                              <NativeSearchAnswer runId={runId!} itemId={result.item.id} text={result.answer?.rawResponse}
+                                                enabled={Boolean((run as any)?.searchConfig?.webSearch?.enabled)} />
+                                            </div>
                                           </div>
                                         </div>
                                       )}

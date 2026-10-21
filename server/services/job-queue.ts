@@ -6,6 +6,9 @@ import {
   generateRealisticPrompts,
 } from "../openai-service";
 import { executePromptRun } from "./prompt-run-executor";
+import { executeWithProductionBudget } from "./pilot-budget/production-runtime";
+import { PilotBudgetError } from "./pilot-budget/guard";
+import { productionManifest, productionPilotContext } from "./pilot-budget/production-config";
 import { crawlWebsite } from "./website-crawler";
 import { ingestCrawlResults } from "./xray-ingestion";
 import { probeSiteHealth, updateSiteHealth } from "./xray-health-probe";
@@ -453,6 +456,8 @@ export class JobQueue {
   }
 
   async enqueue(job: InsertJob): Promise<Job> {
+    if (productionPilotContext.getStore() && job.type !== "process_prompt_run")
+      throw new PilotBudgetError("UNAPPROVED_PILOT_JOB");
     if (this.isShuttingDown) {
       throw new Error('JobQueue is shutting down and is not accepting new jobs');
     }
@@ -796,6 +801,7 @@ export class JobQueue {
             const promptCount = promptRun.totalPrompts || Math.ceil(promptRunItems.length / modelCount) || 1;
             
             return calculateJobTimeout({
+              webSearchEnabled: (promptRun.searchConfig as { webSearch?: { enabled?: boolean } } | null)?.webSearch?.enabled === true,
               promptCount,
               modelCount,
               competitorCount: competitors.length
@@ -869,7 +875,12 @@ export class JobQueue {
       // Use claimedJob instead of stale job snapshot for accurate state
 
       // Process the job based on type
-      await this.processJob(claimedJob);
+      const pilot = productionManifest();
+      if (pilot && claimedJob.type !== "process_prompt_run" && this.extractClientId(claimedJob) === pilot.clientId)
+        throw new PilotBudgetError("UNAPPROVED_PILOT_JOB");
+      // An enqueue can synchronously start unrelated customer jobs. Do not
+      // let the caller's HTTP sentinel leak into another job's SDK requests.
+      await productionPilotContext.exit(() => this.processJob(claimedJob));
 
       // Check if job was cancelled during processing
       if (this.isJobCancelled(job.id)) {
@@ -1096,13 +1107,21 @@ export class JobQueue {
     } : undefined;
 
     try {
-      await executePromptRun({
+      await executeWithProductionBudget(promptRunId, () => executePromptRun({
         storage: this.storage,
         promptRunId,
         onProgress: updateProgress,
         checkCancellation,
         onHeartbeat,
-      });
+      }));
+    } catch (failure) {
+      if (failure instanceof PilotBudgetError) {
+        const run = await this.storage.getPromptRun(promptRunId);
+        if (run && (run.status === "queued" || run.status === "running")) {
+          await this.storage.updatePromptRun(promptRunId, { status: "error", errorSummary: failure.message });
+        }
+      }
+      throw failure;
     } finally {
       clearInterval(cancelPoll);
       if (jobId) {

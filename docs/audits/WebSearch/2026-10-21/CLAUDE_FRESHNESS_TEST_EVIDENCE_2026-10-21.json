@@ -1,0 +1,423 @@
+{
+  "title": "Claude R1A current-Firefox freshness failures",
+  "recordDate": "2026-10-21 Asia/Dubai",
+  "ownerDecision": "Accept documented freshness limitation; keep OpenAI and Claude in joint R1A release. This is not production activation, publishing or spend authorization.",
+  "test": "Identify current stable Firefox point version and release date at answer time using official release notes",
+  "requestProvenance": "Reconstructed from tested source and saved prompt/run policy; raw outbound HTTP request was not retained. Saved answers/evidence below are from actual calls, not regenerated.",
+  "endpoint": "https://api.anthropic.com/v1/messages",
+  "method": "POST",
+  "nonSecretHeaders": {
+    "Content-Type": "application/json",
+    "anthropic-version": "2023-06-01"
+  },
+  "authentication": "API key excluded; never include credentials in this record",
+  "requestBody": {
+    "model": "claude-sonnet-5",
+    "system": "You are a helpful AI assistant. When answering questions:\n1. Provide detailed, informative responses\n2. Include specific examples, company names, and brand mentions where relevant\n3. If discussing products, services, or companies, mention specific names and compare options\n4. Include URLs or sources when possible (use actual URLs if you know them)\n5. If ranking or listing options, be specific about positioning and order",
+    "max_tokens": 8000,
+    "messages": [
+      {
+        "role": "user",
+        "content": "Check Mozilla's official release notes. What is the current stable Firefox version and release date at the time of your answer? Answer in English without emojis. Finish with a short Sources section listing the literal official URLs. Do not invent facts or citations."
+      }
+    ],
+    "tools": [
+      {
+        "type": "web_search_20250305",
+        "name": "web_search",
+        "max_uses": 5
+      }
+    ],
+    "service_tier": "standard_only"
+  },
+  "omittedRequestParameters": [
+    "temperature",
+    "top_p",
+    "top_k",
+    "thinking",
+    "tool_choice",
+    "stream",
+    "allowed_domains",
+    "blocked_domains",
+    "user_location"
+  ],
+  "omittedParameterNote": "No explicit values; provider defaults/internal context not captured. Search invocation policy auto; no explicit current-date injection or domain/time filter.",
+  "runPolicy": {
+    "webSearchEnabled": true,
+    "itemDeadlineMs": 180000,
+    "maxRetries": 2,
+    "claudeMaxUses": 5,
+    "invocationPolicy": "auto"
+  },
+  "groundTruth": {
+    "expectedVersion": "158.0.1",
+    "expectedReleaseDate": "2026-10-20",
+    "releaseNotes": "https://www.firefox.com/en-US/firefox/158.0.1/releasenotes/",
+    "officialFeed": "https://product-details.mozilla.org/1.0/firefox_versions.json",
+    "directFeedCheckedAt": "2026-10-20T20:17:13Z",
+    "lastModified": "2026-10-20T13:52:47Z",
+    "ageSeconds": 95,
+    "cacheControl": "max-age=300",
+    "latestFirefoxVersion": "158.0.1",
+    "caution": "Frozen historical expectation, not a claim about the latest version when this record is read. A separate extracted/cached fetch returned an older value."
+  },
+  "responseProvenance": "Verbatim saved canonical answer strings and native evidence. This is not the raw Anthropic message JSON. Polaris joins provider text blocks with blank lines and stores citations separately. Raw tool queries/search snippets and full raw headers were not retained.",
+  "cases": [
+    {
+      "case": "Initial current-fact probe",
+      "runId": "3a6d167d-3911-4f6f-875c-2885a4c41fa0",
+      "itemId": "8fc301e4-dc08-4fa3-8a42-8f05d7e4abe7",
+      "runCreatedAtUtc": "2026-10-20T20:00:58.163Z",
+      "timeNote": "Run creation timestamp, not exact provider dispatch time.",
+      "runStatus": "done",
+      "deliverablesStatus": "ready",
+      "prompt": "Check Mozilla's official release notes. What is the current stable Firefox version and release date at the time of your answer? Answer in English without emojis. Finish with a short Sources section listing the literal official URLs. Do not invent facts or citations.",
+      "answerText": "Based on Mozilla's official release notes, the current stable version of Firefox is Firefox 158.0.\n\n\n\nVersion 158.0 was first offered to Release channel users on October 13, 2026.\n\n This is confirmed by the developer-focused release notes as well, which state that \n\nFirefox 158 was released on October 13, 2026.\n\n\n\nNote that there is also a minor point release, Firefox 157.0.1, which was offered earlier in October, but it has since been superseded by the 158.0 stable release described above. For enterprise/ESR users, Firefox ESR 153.5.0 was also released on the same date, October 13, 2026.\n\n## Sources\n- https://www.firefox.com/en-US/firefox/158.0/releasenotes/\n- https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/158\n- https://firefox-admin-docs.mozilla.org/release-notes/",
+      "evidence": {
+        "usage": {
+          "inputTokens": 18912,
+          "outputTokens": 483,
+          "webSearchRequests": 2
+        },
+        "sources": [
+          {
+            "id": "s1",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/160",
+            "kind": "consulted",
+            "title": "Firefox 160 release notes for developers (Nightly) - Mozilla"
+          },
+          {
+            "id": "s2",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/159",
+            "kind": "consulted",
+            "title": "Firefox 159 release notes for developers (Beta) - Mozilla"
+          },
+          {
+            "id": "s3",
+            "url": "https://firefox-admin-docs.mozilla.org/release-notes/",
+            "kind": "consulted",
+            "title": "Firefox Release Notes for Enterprise"
+          },
+          {
+            "id": "s4",
+            "url": "https://www.mozilla.org/en-US/firefox/9.0.1/releasenotes/",
+            "kind": "consulted",
+            "title": "Mozilla Firefox Release Notes"
+          },
+          {
+            "id": "s5",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/158",
+            "kind": "cited",
+            "title": "Firefox 158 release notes for developers (Stable) - Mozilla"
+          },
+          {
+            "id": "s6",
+            "url": "https://firefox-admin-docs.mozilla.org/release-notes/version/firefox-152...latest/",
+            "kind": "consulted",
+            "title": "All versions since Firefox 152"
+          },
+          {
+            "id": "s7",
+            "url": "https://en.wikipedia.org/wiki/Firefox_OS",
+            "kind": "consulted",
+            "title": "Firefox OS"
+          },
+          {
+            "id": "s8",
+            "url": "https://wiki.mozilla.org/Support:Releases",
+            "kind": "consulted",
+            "title": "Support:Releases - MozillaWiki"
+          },
+          {
+            "id": "s9",
+            "url": "https://en.wikipedia.org/wiki/Firefox",
+            "kind": "consulted",
+            "title": "Firefox"
+          },
+          {
+            "id": "s10",
+            "url": "https://www.firefox.com/en-US/firefox/153.5.0/releasenotes/",
+            "kind": "consulted",
+            "title": "Release Notes - 153.5.0 Firefox ESR"
+          },
+          {
+            "id": "s11",
+            "url": "https://www.firefox.com/en-US/firefox/157.0.1/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 157.0.1, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s12",
+            "url": "https://www.firefox.com/en-US/firefox/158.0/releasenotes/",
+            "kind": "cited",
+            "title": "Firefox 158.0, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s13",
+            "url": "https://whattrainisitnow.com/calendar/monthly/",
+            "kind": "consulted",
+            "title": "General calendar of upcoming Firefox release milestones"
+          },
+          {
+            "id": "s14",
+            "url": "https://releasebot.io/updates/mozilla/firefox",
+            "kind": "consulted",
+            "title": "Firefox Updates by Mozilla - October 2026 - Releasebot"
+          }
+        ],
+        "version": 1,
+        "provider": "anthropic",
+        "toolType": "web_search_20250305",
+        "citations": [
+          {
+            "textEnd": 179,
+            "sourceIds": [
+              "s12"
+            ],
+            "textStart": 102,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 1
+            }
+          },
+          {
+            "textEnd": 312,
+            "sourceIds": [
+              "s5"
+            ],
+            "textStart": 267,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 3
+            }
+          }
+        ],
+        "actualModel": "claude-sonnet-5",
+        "searchCount": 2,
+        "attemptCount": 1,
+        "toolCallCount": 2,
+        "requestedModel": "claude-sonnet-5",
+        "searchRequested": true,
+        "invocationStatus": "invoked",
+        "continuationCount": 0,
+        "providerRequestId": "req_011CgE5qGQePSBCVjHDC2trH",
+        "providerResponseId": "msg_011CgE5qHPwJ8ej2BUBPjd7F",
+        "actualModelEvidence": "provider_reported",
+        "generationDurationMs": 6390,
+        "omittedConsultedSources": 0
+      },
+      "qualityOutcome": "FAIL: reported 158.0 / October 13 instead of available 158.0.1 / October 20",
+      "technicalOutcome": "PASS: exact model, invoked native search, valid saved attribution and completed pipeline"
+    },
+    {
+      "case": "Inherited-ON same-prompt rerun",
+      "runId": "87bff62e-6490-461f-938d-89506eb77335",
+      "itemId": "079a59cc-e3cb-462d-acf7-c6c356d56127",
+      "runCreatedAtUtc": "2026-10-20T20:07:19.379Z",
+      "timeNote": "Run creation timestamp, not exact provider dispatch time.",
+      "runStatus": "done",
+      "deliverablesStatus": "ready",
+      "prompt": "Check Mozilla's official release notes. What is the current stable Firefox version and release date at the time of your answer? Answer in English without emojis. Finish with a short Sources section listing the literal official URLs. Do not invent facts or citations.",
+      "answerText": "Based on Mozilla's official release notes, here is the current stable Firefox version information:\n\n**Current Stable Version: Firefox 158.0**\n**Release Date: October 13, 2026**\n\nThis is confirmed across multiple official Mozilla sources. The MDN developer release notes state: \n\nFirefox 158 release notes for developers (Stable). This article provides information about the changes in Firefox 158 that affect developers. Firefox 158 was released on October 13, 2026.\n\n\n\nThis is further corroborated by Mozilla's enterprise release notes documentation, which lists \n\nFirefox 158 Latest, October 13, 2026... Firefox ESR 153 is the current ESR\n\n, confirming 158 as the latest standard release channel version at this time.\n\nAdditionally, the MDN Nightly and Beta channel pages confirm the version lineage, showing the release train structure as \n\nFirefox 158 (Stable), Firefox 159 (Beta), Firefox 160 (Nightly)\n\n, with Firefox 159 (Beta) \n\ncurrent Beta version of Firefox and ships on October 27, 2026\n\n, and Firefox 160 (Nightly) \n\ncurrent Nightly version of Firefox and ships on November 10, 2026\n\n. This confirms Firefox 158 remains the current stable release as of the time of this answer (mid-to-late October 2026), since Firefox 159 has not yet moved from Beta to Stable.\n\nIt's worth noting that Firefox uses a rapid release cycle, so a minor point release (e.g., 158.0.1) could appear between major versions for urgent bug or security fixes, but as of the available official release notes, 158.0 (October 13, 2026) is the latest confirmed stable release.\n\n## Sources\n- https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/158\n- https://firefox-admin-docs.mozilla.org/release-notes/\n- https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/159\n- https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/160",
+      "evidence": {
+        "usage": {
+          "inputTokens": 19375,
+          "outputTokens": 1113,
+          "webSearchRequests": 2
+        },
+        "sources": [
+          {
+            "id": "s1",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/160",
+            "kind": "cited",
+            "title": "Firefox 160 release notes for developers (Nightly) - Mozilla"
+          },
+          {
+            "id": "s2",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/159",
+            "kind": "cited",
+            "title": "Firefox 159 release notes for developers (Beta) - Mozilla"
+          },
+          {
+            "id": "s3",
+            "url": "https://firefox-admin-docs.mozilla.org/release-notes/",
+            "kind": "cited",
+            "title": "Firefox Release Notes for Enterprise"
+          },
+          {
+            "id": "s4",
+            "url": "https://www.mozilla.org/en-US/firefox/9.0.1/releasenotes/",
+            "kind": "consulted",
+            "title": "Mozilla Firefox Release Notes"
+          },
+          {
+            "id": "s5",
+            "url": "https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/158",
+            "kind": "cited",
+            "title": "Firefox 158 release notes for developers (Stable) - Mozilla"
+          },
+          {
+            "id": "s6",
+            "url": "https://firefox-admin-docs.mozilla.org/release-notes/version/firefox-152...latest/",
+            "kind": "consulted",
+            "title": "All versions since Firefox 152"
+          },
+          {
+            "id": "s7",
+            "url": "https://en.wikipedia.org/wiki/Firefox_OS",
+            "kind": "consulted",
+            "title": "Firefox OS"
+          },
+          {
+            "id": "s8",
+            "url": "https://wiki.mozilla.org/Support:Releases",
+            "kind": "consulted",
+            "title": "Support:Releases - MozillaWiki"
+          },
+          {
+            "id": "s9",
+            "url": "https://en.wikipedia.org/wiki/Firefox",
+            "kind": "consulted",
+            "title": "Firefox"
+          },
+          {
+            "id": "s10",
+            "url": "https://www.firefox.com/en-US/firefox/156.0/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 156.0, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s11",
+            "url": "https://www.firefox.com/en-US/firefox/152.0.5/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 152.0.5, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s12",
+            "url": "https://www.firefox.com/en-US/firefox/156.0.1/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 156.0.1, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s13",
+            "url": "https://www.firefox.com/en-US/firefox/152.0.3/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 152.0.3, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s14",
+            "url": "https://www.firefox.com/en-US/firefox/148.0/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 148.0, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s15",
+            "url": "https://www.firefox.com/en-US/firefox/152.0.4/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 152.0.4, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s16",
+            "url": "https://www.firefox.com/en-US/firefox/153.0.1/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 153.0.1, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s17",
+            "url": "https://www.firefox.com/en-US/firefox/155.0/releasenotes/",
+            "kind": "consulted",
+            "title": "Firefox 155.0, See All New Features, Updates and Fixes"
+          },
+          {
+            "id": "s18",
+            "url": "https://releasebot.io/updates/mozilla",
+            "kind": "consulted",
+            "title": "Mozilla Release Notes - September 2026 Latest Updates - Releasebot"
+          }
+        ],
+        "version": 1,
+        "provider": "anthropic",
+        "toolType": "web_search_20250305",
+        "citations": [
+          {
+            "textEnd": 466,
+            "sourceIds": [
+              "s5"
+            ],
+            "textStart": 279,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 1
+            }
+          },
+          {
+            "textEnd": 640,
+            "sourceIds": [
+              "s3"
+            ],
+            "textStart": 566,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 3
+            }
+          },
+          {
+            "textEnd": 907,
+            "sourceIds": [
+              "s1"
+            ],
+            "textStart": 844,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 5
+            }
+          },
+          {
+            "textEnd": 998,
+            "sourceIds": [
+              "s2"
+            ],
+            "textStart": 937,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 7
+            }
+          },
+          {
+            "textEnd": 1095,
+            "sourceIds": [
+              "s1"
+            ],
+            "textStart": 1030,
+            "association": "block",
+            "providerLocator": {
+              "unit": "block",
+              "blockIndex": 9
+            }
+          }
+        ],
+        "actualModel": "claude-sonnet-5",
+        "searchCount": 2,
+        "attemptCount": 1,
+        "toolCallCount": 2,
+        "requestedModel": "claude-sonnet-5",
+        "searchRequested": true,
+        "invocationStatus": "invoked",
+        "continuationCount": 0,
+        "providerRequestId": "req_011CgE6KNKPM6fYrc1V1H9wF",
+        "providerResponseId": "msg_011CgE6KPMdtTs7TG6M2sfSR",
+        "actualModelEvidence": "provider_reported",
+        "generationDurationMs": 11753,
+        "omittedConsultedSources": 0
+      },
+      "qualityOutcome": "FAIL: reported 158.0 / October 13 instead of available 158.0.1 / October 20",
+      "technicalOutcome": "PASS: exact model, invoked native search, valid saved attribution and completed pipeline"
+    }
+  ]
+}

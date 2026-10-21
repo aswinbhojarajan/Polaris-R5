@@ -1,6 +1,8 @@
 import { SnapshotData } from './report-snapshot';
 import { GeneratedNarratives } from './narrative-generator';
 
+import { linkNativeReportCitations, type NativeReportLink } from './native-report-attribution';
+
 export interface TemplateData {
   snapshot: SnapshotData;
   narratives: GeneratedNarratives;
@@ -846,6 +848,7 @@ function formatNarrativeContent(content: string): string {
 
 export interface AppendixTemplateData {
   appendixContent: string;
+  nativeSearchLinks?: NativeReportLink[];
   clientName: string;
   generatedDate: string;
   metadata?: {
@@ -1166,7 +1169,7 @@ export function generateAppendixHTML(data: AppendixTemplateData): string {
 
   <!-- Appendix Content -->
   <div class="appendix-content">
-    ${formatNarrativeContent(appendixContent)}
+    ${linkNativeReportCitations(appendixContent, data.nativeSearchLinks ?? [], formatNarrativeContent)}
   </div>
 
   <!-- Footer -->

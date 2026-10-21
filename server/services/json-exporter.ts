@@ -5,6 +5,8 @@
 
 import type { SnapshotData } from './report-snapshot';
 import type { ClientInfo, CompetitorInfo } from './csv-exporter';
+import { formatNativeAnswerForDisplay } from '../../shared/native-search-display';
+import type { SearchEvidence } from '../../shared/native-web-search';
 
 export interface EnhancedJSONExport {
   reportMetadata: {
@@ -37,6 +39,7 @@ export interface ModelResponse {
   modelName: string;
   modelVendor: string;
   responseText: string;
+  nativeSearchEvidence?: SearchEvidence;
   competitorScores: CompetitorScore[];
   aiRankings: AIRanking[];
   citations: Citation[];
@@ -169,7 +172,8 @@ export function generateEnhancedJSON(
         modelId: response.modelId,
         modelName: model?.displayName || '',
         modelVendor: model?.vendor || '',
-        responseText: response.answer,
+        responseText: formatNativeAnswerForDisplay(response.answer, response.nativeSearchEvidence),
+        ...(response.nativeSearchEvidence ? { nativeSearchEvidence: response.nativeSearchEvidence } : {}),
         competitorScores,
         aiRankings,
         citations,

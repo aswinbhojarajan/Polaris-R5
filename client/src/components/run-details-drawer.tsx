@@ -1,3 +1,4 @@
+import { NativeSearchAnswer } from "./native-search-answer";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -25,7 +26,7 @@ interface RunDetailsDrawerProps {
 export function RunDetailsDrawer({ runId, isOpen, onClose }: RunDetailsDrawerProps) {
   const selectedClientId = useSelectedClientId();
 
-  type RunResultsResponse = { run?: { status?: string } & Record<string, unknown>; results?: unknown[] } & Record<string, unknown>;
+  type RunResultsResponse = { run?: Omit<PromptRun, "createdAt"> & { createdAt: string }; results?: unknown[] } & Record<string, unknown>;
   const { data: runData, isLoading } = useQuery<RunResultsResponse>({
     queryKey: ['/api/v1/prompt-runs', runId, 'results', selectedClientId],
     queryFn: async () => {
@@ -41,7 +42,7 @@ export function RunDetailsDrawer({ runId, isOpen, onClose }: RunDetailsDrawerPro
     refetchInterval: (query) => {
       const status = query.state.data?.run?.status;
       if (!status) return false;
-      const terminal = ['done', 'failed', 'stopped', 'cancelled', 'error'];
+      const terminal = ['done', 'completed_with_errors', 'failed', 'stopped', 'cancelled', 'error', 'paused'];
       return terminal.includes(status) ? false : 5000;
     },
   });
@@ -187,12 +188,13 @@ export function RunDetailsDrawer({ runId, isOpen, onClose }: RunDetailsDrawerPro
                             <p className="text-xs text-muted-foreground mb-1">Prompt</p>
                             <p className="text-sm">{result.prompt?.text || 'N/A'}</p>
                           </div>
-                          {result.answer && (
+                          {(result.answer || (run as any)?.searchConfig?.webSearch?.enabled) && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-1">Full Response</p>
-                              <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">
-                                {result.answer.rawResponse}
-                              </p>
+                              <div className="bg-muted p-3 rounded-md">
+                                <NativeSearchAnswer runId={runId!} itemId={result.item.id} text={result.answer?.rawResponse}
+                                  enabled={Boolean((run as any)?.searchConfig?.webSearch?.enabled)} />
+                              </div>
                             </div>
                           )}
                         </CardContent>

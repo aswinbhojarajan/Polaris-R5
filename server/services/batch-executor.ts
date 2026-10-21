@@ -5,6 +5,7 @@
 
 import { executePrompt, type AIExecutionResult } from './ai-executor';
 import { performanceLogger } from './performance-logger';
+import { isControlSignal } from './native-web-search/common';
 
 // Per-provider concurrency limits to avoid rate limiting
 const PROVIDER_CONCURRENCY: Record<string, number> = {
@@ -127,7 +128,8 @@ async function executeProviderBatch(
   items: BatchItem[],
   runId: string,
   onItemComplete: (result: BatchResult) => Promise<void>,
-  checkCancellation?: () => void
+  checkCancellation?: () => void,
+  executeItem?: (item: BatchItem) => Promise<BatchResult>,
 ): Promise<BatchResult[]> {
   const concurrency = PROVIDER_CONCURRENCY[provider] || 2;
   const results: BatchResult[] = [];
@@ -143,7 +145,7 @@ async function executeProviderBatch(
     const batchStart = Date.now();
     
     const batchResults = await Promise.allSettled(
-      batch.map(item => executeWithRetry(item, runId))
+      batch.map(item => executeItem ? executeItem(item) : executeWithRetry(item, runId))
     );
     
     // Process results and await scoring for each item sequentially
@@ -158,6 +160,10 @@ async function executeProviderBatch(
         // Await the scoring callback to ensure proper sequencing
         await onItemComplete(settledResult.value);
       } else {
+        if (isControlSignal(settledResult.reason)) throw settledResult.reason;
+        // Native failures outside normalized provider responses are ownership
+        // or mandatory-persistence failures, never paid retry candidates.
+        if (executeItem) throw settledResult.reason;
         // Promise rejected - shouldn't happen with our retry logic
         const errorResult: BatchResult = {
           itemId: batch[j]?.id || 'unknown',
@@ -182,6 +188,7 @@ export interface BatchExecutorOptions {
   onProgress?: (completed: number, total: number, message: string) => void;
   onItemComplete?: (itemId: string, success: boolean, result?: AIExecutionResult, error?: string) => Promise<void>;
   checkCancellation?: () => void;
+  executeItem?: (item: BatchItem) => Promise<BatchResult>;
 }
 
 /**
@@ -226,7 +233,8 @@ export async function executeBatch(
         providerItems, 
         runId, 
         handleItemComplete,
-        checkCancellation
+        checkCancellation,
+        options.executeItem,
       );
       allResults.push(...providerResults);
     } catch (error) {
@@ -242,6 +250,7 @@ export async function executeBatch(
       ) {
         throw error;
       }
+      if (options.executeItem) throw error;
       // Log other errors but continue with other providers
       console.error(`[BatchExecutor] Error processing provider ${provider}:`, error);
     }

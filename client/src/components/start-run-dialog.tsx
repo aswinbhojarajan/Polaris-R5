@@ -47,6 +47,8 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [runName, setRunName] = useState('');
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  useEffect(() => { setWebSearchEnabled(false); }, [isOpen, clientId]);
   const [promptSearch, setPromptSearch] = useState('');
   const [promptSourceFilter, setPromptSourceFilter] = useState<'all' | 'ai' | 'manual'>('all');
   const [coreModelsOpen, setCoreModelsOpen] = useState(true);
@@ -67,7 +69,7 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
       queryFn: async () => {
         const res = await fetch(`/api/v1/prompt-runs/${runId}/selections`, { credentials: "include" });
         if (!res.ok) return { runId, promptIds: [] as string[], modelIds: [] as string[] };
-        return res.json() as Promise<{ runId: string; promptIds: string[]; modelIds: string[] }>;
+        return res.json() as Promise<{ runId: string; promptIds: string[]; modelIds: string[]; webSearchEnabled?: boolean }>;
       },
       enabled: !!runId && isOpen,
       staleTime: 10_000,
@@ -82,10 +84,10 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
       if (!data) continue;
       const pOverlap = data.promptIds.some((id) => wantPrompts.has(id));
       const mOverlap = data.modelIds.some((id) => wantModels.has(id));
-      if (pOverlap && mOverlap) return data.runId;
+      if (pOverlap && mOverlap && Boolean(data.webSearchEnabled) === webSearchEnabled) return data.runId;
     }
     return null;
-  }, [activeRunSelectionsQueries, selectedPrompts, selectedModels]);
+  }, [activeRunSelectionsQueries, selectedPrompts, selectedModels, webSearchEnabled]);
   const promptRunActive = !!overlappingRunId;
 
   const { data: prompts = [], isLoading: promptsLoading } = useQuery<any[]>({
@@ -184,6 +186,7 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
         clientId,
         promptIds: selectedPrompts,
         modelIds: selectedModels,
+        webSearchEnabled,
         createdBy: 'user',
         name: runName.trim() || undefined
       });
@@ -245,6 +248,7 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
   };
 
   const handleClose = () => {
+    setWebSearchEnabled(false);
     setSelectedPrompts([]);
     setSelectedModels([]);
     setRunName('');
@@ -256,13 +260,16 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
   };
 
   const totalCombinations = selectedPrompts.length * selectedModels.length;
-  const canStart = selectedPrompts.length > 0 && selectedModels.length > 0;
+  const searchBlockedModels = (models ?? []).filter((model: any) =>
+    selectedModels.includes(model.id) && !model.webSearch?.eligible);
+  const canStart = selectedPrompts.length > 0 && selectedModels.length > 0 &&
+    (!webSearchEnabled || searchBlockedModels.length === 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="w-[95vw] max-w-[95vw] sm:w-[90vw] sm:max-w-[40rem] md:w-[85vw] md:max-w-[56rem] lg:w-[80vw] lg:max-w-[80vw] xl:w-[75vw] xl:max-w-[75vw] 2xl:max-w-[1400px] max-h-[90vh] flex flex-col" data-testid="dialog-start-run">
+      <DialogContent className="w-[95vw] max-w-[95vw] sm:w-[90vw] sm:max-w-[40rem] md:w-[85vw] md:max-w-[56rem] lg:w-[80vw] lg:max-w-[80vw] xl:w-[75vw] xl:max-w-[75vw] 2xl:max-w-[1400px] max-h-[90vh] flex flex-col max-sm:block max-sm:overflow-y-auto" data-testid="dialog-start-run">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div className="flex-1">
               <DialogTitle className="text-lg sm:text-xl mb-1">Start New Prompt Run</DialogTitle>
               <DialogDescription className="text-sm">
@@ -283,7 +290,25 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-3 flex-1 min-h-0 py-2 overflow-hidden">
+        <section className="space-y-2 shrink-0 my-2" aria-label="Web search settings">
+          <label className="flex items-center justify-between gap-4 border rounded-md px-3 py-2 cursor-pointer">
+            <span><span className="block text-sm font-medium">Enable web search</span>
+              <span className="block text-xs text-muted-foreground">Applies to this run. The provider may answer without searching.</span></span>
+            <Checkbox checked={webSearchEnabled} onCheckedChange={checked => setWebSearchEnabled(checked === true)}
+              aria-label="Enable web search" data-testid="checkbox-enable-web-search" />
+          </label>
+          <p className="text-xs rounded-md border border-amber-200 bg-amber-50 text-amber-950 px-3 py-2">
+            Web search can increase cost and response time. It is optional and starts off for each new run.
+          </p>
+          {webSearchEnabled && searchBlockedModels.length > 0 && <div role="alert"
+            className="text-xs border border-destructive/30 rounded-md p-3 space-y-1">
+            <p className="font-medium">Some selected models cannot use web search. Change your selection or turn search off.</p>
+            {searchBlockedModels.map((model: any) => <p key={model.id}>
+              <strong>{model.displayName}:</strong> {model.webSearch?.message ?? "Native search eligibility is unverified."}
+            </p>)}
+          </div>}
+        </section>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-3 flex-1 min-h-0 py-2 overflow-hidden max-sm:overflow-visible max-sm:flex-none max-sm:min-h-[460px]">
           {/* Prompts Selection */}
           <Card className="flex flex-col min-h-0 overflow-hidden">
             <CardHeader className="pb-1 pt-3 shrink-0">
@@ -314,7 +339,7 @@ export function StartRunDialog({ isOpen, onClose, clientId }: StartRunDialogProp
               </div>
 
               {/* Source Filter */}
-              <div className="flex gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-2">
                 <Button
                   variant={promptSourceFilter === 'all' ? 'default' : 'outline'}
                   size="sm"

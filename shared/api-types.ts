@@ -1466,6 +1466,9 @@ export interface paths {
                             } | unknown[] | unknown;
                             customGeography?: string | null;
                             customIndustry?: string | null;
+                            disabledModelNotifications?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             focusAreas?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1478,10 +1481,14 @@ export interface paths {
                             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                             orgId: string;
                             ownerUserId?: string | null;
+                            primaryLanguage?: string | null;
+                            primaryTestLocation?: string | null;
                             projectName: string;
                             selectedAiModelIds?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
+                            targetCustomerPersona?: string | null;
+                            targetMarketCountry?: string | null;
                             urls?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1535,6 +1542,9 @@ export interface paths {
                         }[];
                         customGeography?: string | null;
                         customIndustry?: string | null;
+                        disabledModelNotifications?: string | number | boolean | unknown | {
+                            [key: string]: unknown;
+                        } | unknown[] | unknown;
                         focusAreas?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
@@ -1547,10 +1557,14 @@ export interface paths {
                         onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                         orgId: string;
                         ownerUserId?: string | null;
+                        primaryLanguage?: string | null;
+                        primaryTestLocation?: string | null;
                         projectName: string;
                         selectedAiModelIds?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
+                        targetCustomerPersona?: string | null;
+                        targetMarketCountry?: string | null;
                         urls?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
@@ -1574,6 +1588,9 @@ export interface paths {
                             } | unknown[] | unknown;
                             customGeography?: string | null;
                             customIndustry?: string | null;
+                            disabledModelNotifications?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             focusAreas?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1586,10 +1603,14 @@ export interface paths {
                             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                             orgId: string;
                             ownerUserId?: string | null;
+                            primaryLanguage?: string | null;
+                            primaryTestLocation?: string | null;
                             projectName: string;
                             selectedAiModelIds?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
+                            targetCustomerPersona?: string | null;
+                            targetMarketCountry?: string | null;
                             urls?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1656,6 +1677,9 @@ export interface paths {
                             } | unknown[] | unknown;
                             customGeography?: string | null;
                             customIndustry?: string | null;
+                            disabledModelNotifications?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             focusAreas?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1668,10 +1692,14 @@ export interface paths {
                             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                             orgId: string;
                             ownerUserId?: string | null;
+                            primaryLanguage?: string | null;
+                            primaryTestLocation?: string | null;
                             projectName: string;
                             selectedAiModelIds?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
+                            targetCustomerPersona?: string | null;
+                            targetMarketCountry?: string | null;
                             urls?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1719,6 +1747,9 @@ export interface paths {
                         } | unknown[] | unknown;
                         customGeography?: string | null;
                         customIndustry?: string | null;
+                        disabledModelNotifications?: string | number | boolean | unknown | {
+                            [key: string]: unknown;
+                        } | unknown[] | unknown;
                         focusAreas?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
@@ -1730,10 +1761,14 @@ export interface paths {
                         onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                         orgId?: string;
                         ownerUserId?: string | null;
+                        primaryLanguage?: string | null;
+                        primaryTestLocation?: string | null;
                         projectName?: string;
                         selectedAiModelIds?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
+                        targetCustomerPersona?: string | null;
+                        targetMarketCountry?: string | null;
                         urls?: string | number | boolean | unknown | {
                             [key: string]: unknown;
                         } | unknown[] | unknown;
@@ -1757,6 +1792,9 @@ export interface paths {
                             } | unknown[] | unknown;
                             customGeography?: string | null;
                             customIndustry?: string | null;
+                            disabledModelNotifications?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             focusAreas?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -1769,10 +1807,14 @@ export interface paths {
                             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
                             orgId: string;
                             ownerUserId?: string | null;
+                            primaryLanguage?: string | null;
+                            primaryTestLocation?: string | null;
                             projectName: string;
                             selectedAiModelIds?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
+                            targetCustomerPersona?: string | null;
+                            targetMarketCountry?: string | null;
                             urls?: string | number | boolean | unknown | {
                                 [key: string]: unknown;
                             } | unknown[] | unknown;
@@ -2008,9 +2050,13 @@ export interface paths {
                             category?: "core" | "additional";
                             costPer1kInput?: string | null;
                             costPer1kOutput?: string | null;
+                            disabledAt?: string | null;
+                            disabledByUserId?: string | null;
+                            disabledReason?: string | null;
                             displayName: string;
                             enabled?: boolean;
                             id: string;
+                            internalOnly?: boolean;
                             maxRpm?: number | null;
                             maxTpm?: number | null;
                             model: string;
@@ -2126,7 +2172,10 @@ export interface paths {
                                 accepted?: boolean;
                                 categoryId?: string | null;
                                 clientId: string;
+                                diagnosticFocus?: string | null;
                                 id: string;
+                                /** @enum {string|null} */
+                                intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                                 /** @enum {string} */
                                 source: "crawl" | "manual" | "csv" | "ai";
                                 text: string;
@@ -3174,8 +3223,9 @@ export interface paths {
                             priority?: "low" | "normal" | "high";
                             progress?: number | null;
                             resumeCount?: number | null;
+                            startedByUserId?: string | null;
                             /** @enum {string} */
-                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                             type: string;
                             workerId?: string | null;
                         }[];
@@ -3245,8 +3295,9 @@ export interface paths {
                             priority?: "low" | "normal" | "high";
                             progress?: number | null;
                             resumeCount?: number | null;
+                            startedByUserId?: string | null;
                             /** @enum {string} */
-                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                             type: string;
                             workerId?: string | null;
                         };
@@ -4212,12 +4263,19 @@ export interface paths {
                             avgVisibilityScore: number;
                             clientId: string;
                             createdBy: string;
+                            deliverablesCompletedAt?: string | null;
+                            deliverablesErrorSummary?: string | null;
+                            deliverablesStatus?: string;
                             errorSummary?: string | null;
+                            heartbeatAt?: string | null;
                             id: string;
                             modelCount: number;
                             name: string;
+                            searchConfig?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             /** @enum {string} */
-                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                             totalPrompts: number;
                         }[];
                     };
@@ -4255,9 +4313,12 @@ export interface paths {
                     "application/json": {
                         clientId: string;
                         createdBy?: string;
+                        iterationOf?: string;
                         modelIds: string[];
                         name?: string;
                         promptIds: string[];
+                        /** @default false */
+                        webSearchEnabled?: boolean;
                     };
                 };
             };
@@ -4282,11 +4343,18 @@ export interface paths {
                             run: {
                                 clientId: string;
                                 createdBy: string;
+                                deliverablesCompletedAt?: string | null;
+                                deliverablesErrorSummary?: string | null;
+                                deliverablesStatus?: string;
                                 errorSummary?: string | null;
+                                heartbeatAt?: string | null;
                                 id: string;
                                 name: string;
+                                searchConfig?: string | number | boolean | unknown | {
+                                    [key: string]: unknown;
+                                } | unknown[] | unknown;
                                 /** @enum {string} */
-                                status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                                status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                                 totalPrompts: number;
                             };
                         };
@@ -4345,11 +4413,18 @@ export interface paths {
                         "application/json": {
                             clientId: string;
                             createdBy: string;
+                            deliverablesCompletedAt?: string | null;
+                            deliverablesErrorSummary?: string | null;
+                            deliverablesStatus?: string;
                             errorSummary?: string | null;
+                            heartbeatAt?: string | null;
                             id: string;
                             name: string;
+                            searchConfig?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             /** @enum {string} */
-                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                             totalPrompts: number;
                         };
                     };
@@ -4442,11 +4517,18 @@ export interface paths {
                         "application/json": {
                             clientId: string;
                             createdBy: string;
+                            deliverablesCompletedAt?: string | null;
+                            deliverablesErrorSummary?: string | null;
+                            deliverablesStatus?: string;
                             errorSummary?: string | null;
+                            heartbeatAt?: string | null;
                             id: string;
                             name: string;
+                            searchConfig?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             /** @enum {string} */
-                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                             totalPrompts: number;
                         };
                     };
@@ -4694,11 +4776,18 @@ export interface paths {
                             run: {
                                 clientId: string;
                                 createdBy: string;
+                                deliverablesCompletedAt?: string | null;
+                                deliverablesErrorSummary?: string | null;
+                                deliverablesStatus?: string;
                                 errorSummary?: string | null;
+                                heartbeatAt?: string | null;
                                 id: string;
                                 name: string;
+                                searchConfig?: string | number | boolean | unknown | {
+                                    [key: string]: unknown;
+                                } | unknown[] | unknown;
                                 /** @enum {string} */
-                                status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+                                status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
                                 totalPrompts: number;
                             };
                         };
@@ -4765,6 +4854,167 @@ export interface paths {
                             factors?: Record<string, never>[];
                             interpretation?: string;
                             score: number;
+                        };
+                    };
+                };
+                /** @description Bad request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/prompt-runs/{id}/search-evidence/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    itemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Authorized bounded native-search item evidence, including failures without an answer */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            answerText?: string | null;
+                            evidence: {
+                                actualModel: string | null;
+                                /** @enum {string} */
+                                actualModelEvidence: "provider_reported" | "not_reported";
+                                attemptCount: number;
+                                citations: {
+                                    /** @enum {string} */
+                                    association: "span" | "block";
+                                    providerLocator: {
+                                        blockIndex: number;
+                                        end?: number;
+                                        start?: number;
+                                        /** @enum {string} */
+                                        unit: "utf16" | "codepoint" | "unambiguous" | "block";
+                                    };
+                                    sourceIds: string[];
+                                    textEnd: number;
+                                    textStart: number;
+                                }[];
+                                continuationCount: number;
+                                error?: {
+                                    code: string;
+                                    message: string;
+                                    retryable: boolean;
+                                };
+                                generationDurationMs: number;
+                                hasGoogleSearchSuggestions?: boolean;
+                                /** @enum {string} */
+                                invocationStatus: "not_invoked" | "invoked" | "failed" | "unknown";
+                                /** @default 0 */
+                                omittedConsultedSources: number;
+                                /** @enum {string} */
+                                provider: "openai" | "anthropic" | "google";
+                                providerRequestId?: string;
+                                providerResponseId?: string;
+                                requestedModel: string;
+                                searchCount?: number;
+                                /** @enum {boolean} */
+                                searchRequested: true;
+                                sources: {
+                                    id: string;
+                                    /** @enum {string} */
+                                    kind: "cited" | "consulted";
+                                    title?: string;
+                                    url: string;
+                                }[];
+                                toolCallCount?: number;
+                                /** @enum {string} */
+                                toolType: "web_search" | "web_search_20250305" | "google_search";
+                                usage: {
+                                    inputTokens?: number;
+                                    outputTokens?: number;
+                                    totalTokens?: number;
+                                    webSearchRequests?: number;
+                                };
+                                /** @enum {number} */
+                                version: 1;
+                            } | null;
+                            itemId?: string;
+                            phase: string;
+                            runStatus?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/prompt-runs/{id}/selections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Current rerun selections and inherited search mode */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            modelIds: string[];
+                            promptIds: string[];
+                            runId: string;
+                            webSearchEnabled: boolean;
                         };
                     };
                 };
@@ -5154,7 +5404,10 @@ export interface paths {
                             accepted?: boolean;
                             categoryId?: string | null;
                             clientId: string;
+                            diagnosticFocus?: string | null;
                             id: string;
+                            /** @enum {string|null} */
+                            intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                             /** @enum {string} */
                             source: "crawl" | "manual" | "csv" | "ai";
                             text: string;
@@ -5195,6 +5448,9 @@ export interface paths {
                         accepted?: boolean;
                         categoryId?: string | null;
                         clientId: string;
+                        diagnosticFocus?: string | null;
+                        /** @enum {string|null} */
+                        intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                         /** @enum {string} */
                         source: "crawl" | "manual" | "csv" | "ai";
                         text: string;
@@ -5212,7 +5468,10 @@ export interface paths {
                             accepted?: boolean;
                             categoryId?: string | null;
                             clientId: string;
+                            diagnosticFocus?: string | null;
                             id: string;
+                            /** @enum {string|null} */
+                            intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                             /** @enum {string} */
                             source: "crawl" | "manual" | "csv" | "ai";
                             text: string;
@@ -5273,7 +5532,10 @@ export interface paths {
                             accepted?: boolean;
                             categoryId?: string | null;
                             clientId: string;
+                            diagnosticFocus?: string | null;
                             id: string;
+                            /** @enum {string|null} */
+                            intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                             /** @enum {string} */
                             source: "crawl" | "manual" | "csv" | "ai";
                             text: string;
@@ -5331,6 +5593,9 @@ export interface paths {
                         accepted?: boolean;
                         categoryId?: string | null;
                         clientId?: string;
+                        diagnosticFocus?: string | null;
+                        /** @enum {string|null} */
+                        intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                         /** @enum {string} */
                         source?: "crawl" | "manual" | "csv" | "ai";
                         text?: string;
@@ -5348,7 +5613,10 @@ export interface paths {
                             accepted?: boolean;
                             categoryId?: string | null;
                             clientId: string;
+                            diagnosticFocus?: string | null;
                             id: string;
+                            /** @enum {string|null} */
+                            intentTier?: "branded" | "semi_branded" | "unbranded" | null;
                             /** @enum {string} */
                             source: "crawl" | "manual" | "csv" | "ai";
                             text: string;
@@ -5444,10 +5712,16 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            appendixContent?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             clientId: string;
                             generatedBy: string;
                             id: string;
                             narrativeGenerated?: boolean;
+                            narratives?: string | number | boolean | unknown | {
+                                [key: string]: unknown;
+                            } | unknown[] | unknown;
                             projectId: string;
                             runIds: string | number | boolean | unknown | {
                                 [key: string]: unknown;
@@ -5516,10 +5790,16 @@ export interface paths {
                     content: {
                         "application/json": {
                             report: {
+                                appendixContent?: string | number | boolean | unknown | {
+                                    [key: string]: unknown;
+                                } | unknown[] | unknown;
                                 clientId: string;
                                 generatedBy: string;
                                 id: string;
                                 narrativeGenerated?: boolean;
+                                narratives?: string | number | boolean | unknown | {
+                                    [key: string]: unknown;
+                                } | unknown[] | unknown;
                                 projectId: string;
                                 runIds: string | number | boolean | unknown | {
                                     [key: string]: unknown;
@@ -7072,8 +7352,12 @@ export interface components {
             category?: "core" | "additional";
             costPer1kInput?: string | null;
             costPer1kOutput?: string | null;
+            disabledAt?: string | null;
+            disabledByUserId?: string | null;
+            disabledReason?: string | null;
             displayName: string;
             enabled?: boolean;
+            internalOnly?: boolean;
             maxRpm?: number | null;
             maxTpm?: number | null;
             model: string;
@@ -7084,14 +7368,24 @@ export interface components {
             category?: "core" | "additional";
             costPer1kInput?: string | null;
             costPer1kOutput?: string | null;
+            disabledAt?: string | null;
+            disabledByUserId?: string | null;
+            disabledReason?: string | null;
             displayName: string;
             enabled?: boolean;
             id: string;
+            internalOnly?: boolean;
             isKeyAvailable: boolean;
             maxRpm?: number | null;
             maxTpm?: number | null;
             model: string;
             vendor: string;
+            webSearch: {
+                eligible: boolean;
+                message: string;
+                policyVersion: string;
+                reason: string;
+            };
         };
         Client: {
             aliases?: string | number | boolean | unknown | {
@@ -7102,6 +7396,9 @@ export interface components {
             } | unknown[] | unknown;
             customGeography?: string | null;
             customIndustry?: string | null;
+            disabledModelNotifications?: string | number | boolean | unknown | {
+                [key: string]: unknown;
+            } | unknown[] | unknown;
             focusAreas?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
@@ -7113,10 +7410,14 @@ export interface components {
             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
             orgId: string;
             ownerUserId?: string | null;
+            primaryLanguage?: string | null;
+            primaryTestLocation?: string | null;
             projectName: string;
             selectedAiModelIds?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
+            targetCustomerPersona?: string | null;
+            targetMarketCountry?: string | null;
             urls?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
@@ -7148,6 +7449,9 @@ export interface components {
             }[];
             customGeography?: string | null;
             customIndustry?: string | null;
+            disabledModelNotifications?: string | number | boolean | unknown | {
+                [key: string]: unknown;
+            } | unknown[] | unknown;
             focusAreas?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
@@ -7160,10 +7464,14 @@ export interface components {
             onboardingStatus?: "draft" | "inprogress" | "completed" | null;
             orgId: string;
             ownerUserId?: string | null;
+            primaryLanguage?: string | null;
+            primaryTestLocation?: string | null;
             projectName: string;
             selectedAiModelIds?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
+            targetCustomerPersona?: string | null;
+            targetMarketCountry?: string | null;
             urls?: string | number | boolean | unknown | {
                 [key: string]: unknown;
             } | unknown[] | unknown;
@@ -7196,8 +7504,9 @@ export interface components {
             priority?: "low" | "normal" | "high";
             progress?: number | null;
             resumeCount?: number | null;
+            startedByUserId?: string | null;
             /** @enum {string} */
-            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
             type: string;
             workerId?: string | null;
         };
@@ -7208,6 +7517,9 @@ export interface components {
             accepted?: boolean;
             categoryId?: string | null;
             clientId: string;
+            diagnosticFocus?: string | null;
+            /** @enum {string|null} */
+            intentTier?: "branded" | "semi_branded" | "unbranded" | null;
             /** @enum {string} */
             source: "crawl" | "manual" | "csv" | "ai";
             text: string;
@@ -7215,11 +7527,18 @@ export interface components {
         PromptRun: {
             clientId: string;
             createdBy: string;
+            deliverablesCompletedAt?: string | null;
+            deliverablesErrorSummary?: string | null;
+            deliverablesStatus?: string;
             errorSummary?: string | null;
+            heartbeatAt?: string | null;
             id?: string;
             name: string;
+            searchConfig?: string | number | boolean | unknown | {
+                [key: string]: unknown;
+            } | unknown[] | unknown;
             /** @enum {string} */
-            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled";
+            status?: "queued" | "running" | "scoring" | "queued_for_benchmarking" | "benchmarking" | "done" | "completed_with_errors" | "error" | "cancelled" | "paused";
             totalPrompts: number;
         };
         QueueConfigWithSessions: {
@@ -7247,9 +7566,15 @@ export interface components {
             title: string;
         };
         ReportSnapshot: {
+            appendixContent?: string | number | boolean | unknown | {
+                [key: string]: unknown;
+            } | unknown[] | unknown;
             clientId: string;
             generatedBy: string;
             narrativeGenerated?: boolean;
+            narratives?: string | number | boolean | unknown | {
+                [key: string]: unknown;
+            } | unknown[] | unknown;
             projectId: string;
             runIds: string | number | boolean | unknown | {
                 [key: string]: unknown;

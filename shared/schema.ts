@@ -1,7 +1,8 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, pgEnum, jsonb, numeric, uniqueIndex, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, pgEnum, jsonb, numeric, uniqueIndex, index, check, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import type { SearchConfig, SearchEvidence } from "./native-web-search";
 
 // Enums
 export const sourceEnum = pgEnum('source_enum', ['crawl', 'manual', 'csv', 'ai']);
@@ -366,6 +367,7 @@ export const promptRuns = pgTable("prompt_runs", {
   // reaper treats `heartbeat_at IS NULL` together with old createdAt
   // as stale.
   heartbeatAt: timestamp("heartbeat_at"),
+  searchConfig: jsonb("search_config").$type<SearchConfig>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => ({
   // Run-list pagination sorts each client's runs newest-first on every poll;
@@ -400,6 +402,49 @@ export const answers = pgTable("answers", {
   summary: text("summary"),
 }, (t) => ({
   byItem: index("idx_answers_prompt_run_item_id").on(t.promptRunItemId),
+}));
+
+// One fenced execution owner per item. Native attribution is deliberately
+// separate from analytical citations and from text passed to scorers.
+export const promptRunItemExecutions = pgTable("prompt_run_item_executions", {
+  itemId: varchar("item_id").primaryKey(),
+  runId: varchar("run_id").notNull(),
+  phase: text("phase").notNull().default("not_started"),
+  answerText: text("answer_text"),
+  evidence: jsonb("evidence").$type<SearchEvidence>(),
+  canonicalAnswerId: varchar("canonical_answer_id"),
+  claimToken: varchar("claim_token"),
+  leaseUntil: timestamp("lease_until"),
+  deadlineAt: timestamp("deadline_at"),
+  ledger: jsonb("ledger").$type<{ attemptCount: number; continuationCount: number; searchBudgetReserved: number }>()
+    .notNull().default({ attemptCount: 0, continuationCount: 0, searchBudgetReserved: 0 }),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => ({
+  byRun: index("idx_native_executions_run_id").on(t.runId),
+  itemFk: foreignKey({ name: "prompt_run_item_executions_item_id_fkey",
+    columns: [t.itemId], foreignColumns: [promptRunItems.id] }).onDelete("cascade"),
+  runFk: foreignKey({ name: "prompt_run_item_executions_run_id_fkey",
+    columns: [t.runId], foreignColumns: [promptRuns.id] }).onDelete("cascade"),
+  answerFk: foreignKey({ name: "prompt_run_item_executions_canonical_answer_id_fkey",
+    columns: [t.canonicalAnswerId], foreignColumns: [answers.id] }).onDelete("set null"),
+  phaseCheck: check("prompt_run_item_executions_phase_check",
+    sql`${t.phase} in ('not_started', 'generating', 'generated', 'scoring', 'scored', 'failed')`),
+  answerCheck: check("prompt_run_item_executions_answer_text_check",
+    sql`${t.answerText} is null or (length(${t.answerText}) >= 1 and length(${t.answerText}) <= 250000)`),
+  evidenceCheck: check("prompt_run_item_executions_evidence_check",
+    sql`${t.evidence} is null or octet_length(${t.evidence}::text) <= 262144`),
+}));
+
+// Conservatively retain pilot reservations even if a run is deleted; deleting
+// a run must not replenish an approved paid-validation allowance.
+export const nativeSearchValidationReservations = pgTable("native_search_validation_reservations", {
+  approvalRef: varchar("approval_ref").notNull(),
+  runId: varchar("run_id").notNull(),
+  itemCount: integer("item_count").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, t => ({
+  reservation: uniqueIndex("idx_native_validation_reservation").on(t.approvalRef, t.runId),
+  itemCountCheck: check("native_search_validation_reservations_item_count_check", sql`${t.itemCount} > 0`),
 }));
 
 export const citations = pgTable("citations", {
@@ -452,6 +497,18 @@ export const competitorScores = pgTable("competitor_scores", {
   overallScore: numeric("overall_score", { precision: 5, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Durable, non-refundable release-pilot accounting. Deliberately independent
+// of run/user deletion; managed Publish creates this table, never startup DDL.
+export const nativeSearchPilotBudgets = pgTable("native_search_pilot_budgets", {
+  approvalRef: varchar("approval_ref").primaryKey(),
+  manifestHash: text("manifest_hash").notNull(),
+  state: jsonb("state").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, t => ({
+  boundedState: check("native_search_pilot_budgets_state_check", sql`octet_length(${t.state}::text) <= 524288`),
+}));
 
 export const uploads = pgTable("uploads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

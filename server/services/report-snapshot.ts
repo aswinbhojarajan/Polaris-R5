@@ -20,6 +20,9 @@ import {
 } from '@shared/schema';
 import { eq, inArray, and } from 'drizzle-orm';
 import { ReportAggregator } from './report-aggregator';
+import { NativeSearchStore } from './native-web-search/store';
+import { validateGeneration, type SearchEvidence } from '../../shared/native-web-search';
+import { sql } from 'drizzle-orm';
 
 export { ReportAggregator };
 
@@ -498,6 +501,7 @@ export interface SnapshotData {
     promptId: string;
     modelId: string;
     answer: string;
+    nativeSearchEvidence?: SearchEvidence;
     // Task #105 (R2) — cached summary from a prior run, if any. The
     // report processor reads this in Step 3 and skips re-summarizing
     // already-summarized answers.
@@ -1154,6 +1158,11 @@ export async function aggregateSnapshotData(
   const promptMap = new Map(uniquePrompts.map(p => [p.id, p]));
   const modelMap = new Map(modelsData.map(m => [m.id, m]));
 
+  const nativeRuns = await db.select({ id: promptRuns.id }).from(promptRuns).where(and(
+    inArray(promptRuns.id, runIds), sql`${promptRuns.searchConfig}->'webSearch'->>'enabled' = 'true'`));
+  const nativeRunIds = new Set(nativeRuns.map(run => run.id));
+  const nativeRows = (await Promise.all(nativeRuns.map(run => new NativeSearchStore().details(run.id)))).flat();
+  const nativeByItem = new Map(nativeRows.map(row => [row.itemId, row]));
   const responses = itemsData
     .filter(item => {
       const answer = answerMap.get(item.id);
@@ -1187,6 +1196,14 @@ export async function aggregateSnapshotData(
       const itemCitations = citationsData.filter(c => c.answerId === answerId);
       const itemMentions = mentionsData.filter(m => m.answerId === answerId);
       const itemRankings = rankingsData.filter(r => r.answerId === answerId);
+      let nativeSearchEvidence: SearchEvidence | undefined;
+      if (nativeRunIds.has(item.promptRunId)) {
+        const native = nativeByItem.get(item.id);
+        if (!native?.evidence || native.answerText !== answer.rawResponse) {
+          throw new Error("Required native answer attribution is missing or inconsistent; export stopped.");
+        }
+        nativeSearchEvidence = validateGeneration({ answerText: answer.rawResponse, evidence: native.evidence }).evidence;
+      }
 
       return {
         promptRunItemId: item.id,
@@ -1194,6 +1211,7 @@ export async function aggregateSnapshotData(
         promptId: item.promptId,
         modelId: item.modelId,
         answer: answer.rawResponse,
+        ...(nativeSearchEvidence ? { nativeSearchEvidence } : {}),
         summary: answer.summary ?? null,
         citationCount: itemCitations.length,
         mentionCount: itemMentions.length,

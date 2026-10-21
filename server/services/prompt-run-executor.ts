@@ -13,6 +13,10 @@ import { openaiService } from '../openai-service';
 import { savePositionFactors, saveSentimentFactors, saveVisibilityFactors } from './score-explainability';
 import { performanceLogger } from './performance-logger';
 import { executeBatch, type BatchItem, type BatchResult } from './batch-executor';
+import { readSearchConfig } from '../../shared/native-web-search';
+import { NativeRunWorker } from './native-web-search/worker';
+import { isControlSignal } from './native-web-search/common';
+import { NativeOwnershipError } from './native-web-search/store';
 import { calculateJobTimeout, formatTimeout } from './job-timeout';
 import { RunLogger } from './run-logger';
 import { finalizePromptRunDeliverables } from './prompt-run-deliverables';
@@ -105,7 +109,7 @@ function isClientBrandRanking(rankingItem: string, allBrandTerms: string[]): boo
 /**
  * Process scoring for a single completed AI response
  */
-async function processItemScoring(
+export async function processItemScoring(
   ctx: ScoringContext,
   item: { id: string; promptId: string },
   prompt: { text: string },
@@ -124,7 +128,8 @@ async function processItemScoring(
     firstMentionPos: null,
     sentimentScore: null,
     positionScore: null,
-    citationCount: null
+    citationCount: null,
+    summary: null
   });
 
   // Extract citations with self-citation validation
@@ -287,6 +292,7 @@ export async function executePromptRun({
   onHeartbeat
 }: PromptRunExecutorParams): Promise<void> {
   const logger = RunLogger.forRun(promptRunId);
+  let nativeWorker: NativeRunWorker | undefined;
 
   // Task #115 — Periodic heartbeat write so `reapStalePromptRuns` can
   // distinguish a healthy long run from a server crash. We stamp once
@@ -312,6 +318,10 @@ export async function executePromptRun({
     const promptRun = await storage.getPromptRun(promptRunId);
     if (!promptRun) {
       throw new Error('Prompt run not found');
+    }
+    const searchConfig = readSearchConfig(promptRun.searchConfig);
+    if (searchConfig.webSearch.enabled) {
+      nativeWorker = new NativeRunWorker(storage, promptRunId, searchConfig, () => checkCancellation?.());
     }
 
     // Get client details for brand name and aliases
@@ -386,6 +396,7 @@ export async function executePromptRun({
     } else {
       // Fresh run - create new checkpoint
       const timeout = calculateJobTimeout({
+        webSearchEnabled: searchConfig.webSearch.enabled,
         promptCount: uniquePromptIds.length,
         modelCount: uniqueModelIds.length,
         competitorCount
@@ -491,7 +502,7 @@ export async function executePromptRun({
       itemLookup.set(item.id, item);
       
       // Mark item as running
-      await storage.updatePromptRunItem(item.id, { 
+      if (!nativeWorker) await storage.updatePromptRunItem(item.id, {
         status: 'running',
         startedAt: new Date()
       });
@@ -532,6 +543,7 @@ export async function executePromptRun({
     
     await executeBatch(batchItems, {
       runId: promptRunId,
+      ...(nativeWorker ? { executeItem: (item: BatchItem) => nativeWorker!.execute(item) } : {}),
       checkCancellation, // Pass cancellation checker to batch executor
       onProgress: (completed, total, message) => {
         const progress = 20 + Math.floor((completed / total) * 70);
@@ -543,7 +555,7 @@ export async function executePromptRun({
         const prompt = item ? promptMap.get(item.promptId) : undefined;
         
         // Phase 3: Track completed item for checkpoint (success or error)
-        completedItemIds.push(itemId);
+        if (!nativeWorker) completedItemIds.push(itemId);
 
         // Task #139 — Persist the checkpoint incrementally so a pause (or a
         // crash) mid-execution resumes from the last completed item instead
@@ -551,7 +563,7 @@ export async function executePromptRun({
         // not implement checkpoints, and a single failed write here must not
         // abort the run.
         try {
-          await storage.updateRunCheckpoint(promptRunId, {
+          if (!nativeWorker) await storage.updateRunCheckpoint(promptRunId, {
             completedItemIds,
             currentStage: 'execution',
           });
@@ -561,12 +573,19 @@ export async function executePromptRun({
         }
         
         if (!success || !result || result.error) {
-          await storage.updatePromptRunItem(itemId, { 
+          if (nativeWorker && !(await nativeWorker.owns(itemId))) throw new NativeOwnershipError();
+          const failureMessage = error || result?.error || 'Unknown error';
+          if (nativeWorker) await nativeWorker.fail(itemId, failureMessage);
+          else await storage.updatePromptRunItem(itemId, {
             status: 'error', 
             error: error || result?.error || 'Unknown error',
             finishedAt: new Date()
           });
           performanceLogger.incrementFailedItems(promptRunId);
+          if (nativeWorker) {
+            completedItemIds.push(itemId);
+            await storage.updateRunCheckpoint(promptRunId, { completedItemIds, currentStage: 'execution' });
+          }
           // Track as processed (but not successful) for benchmarking transition
           if (item) {
             const promptId = item.promptId;
@@ -608,7 +627,14 @@ export async function executePromptRun({
         
         try {
           // Process scoring for this item
-          await processItemScoring(scoringContext, item, prompt, result);
+          if (nativeWorker) {
+            await nativeWorker.score(itemId, buffer =>
+              processItemScoring({ ...scoringContext, storage: buffer }, item, prompt, result));
+            completedItemIds.push(itemId);
+            await storage.updateRunCheckpoint(promptRunId, { completedItemIds, currentStage: 'execution' });
+          } else {
+            await processItemScoring(scoringContext, item, prompt, result);
+          }
           
           // Track successful completion for benchmarking status transition
           const promptId = item.promptId;
@@ -640,8 +666,10 @@ export async function executePromptRun({
             console.log(`[StatusFlow] All ${totalForPrompt} items for prompt ${promptId} processed (${successCount} successful, queued for benchmarking)`);
           }
         } catch (scoringError) {
+          if (isControlSignal(scoringError) || scoringError instanceof NativeOwnershipError) throw scoringError;
           console.error(`Error scoring item ${itemId}:`, scoringError);
-          await storage.updatePromptRunItem(itemId, { 
+          if (nativeWorker) await nativeWorker.fail(itemId, scoringError instanceof Error ? scoringError.message : 'Scoring error');
+          else await storage.updatePromptRunItem(itemId, {
             status: 'error', 
             error: scoringError instanceof Error ? scoringError.message : 'Scoring error',
             finishedAt: new Date()
@@ -875,10 +903,12 @@ export async function executePromptRun({
       } else if (errorSummary.errorCount > 0) {
       // Step 3B.6: Set run status to 'completed_with_errors' if any item has error
         onProgress?.(100, `Prompt run completed with ${errorSummary.errorCount} response errors`);
-        await storage.updatePromptRun(promptRunId, {
+        const completionPatch = {
           status: 'completed_with_errors',
           errorSummary: errorSummary.errorSummary
-        });
+        } as const;
+        if (nativeWorker) await nativeWorker.complete(completionPatch);
+        else await storage.updatePromptRun(promptRunId, completionPatch);
         console.log(`[CompletionGate] Completed with core errors: ${errorSummary.errorSummary}`);
         await logger.warn('Run completed with core response errors', {
           errorCount: errorSummary.errorCount,
@@ -892,7 +922,8 @@ export async function executePromptRun({
           ? 'Prompt run completed; some final deliverables need attention'
           : 'Prompt run completed';
         onProgress?.(100, message);
-        await storage.updatePromptRun(promptRunId, { status: 'done' });
+        if (nativeWorker) await nativeWorker.complete({ status: 'done' });
+        else await storage.updatePromptRun(promptRunId, { status: 'done' });
         console.log(`[CompletionGate] Validation passed: items=${validation.actualAnswers}/${validation.expectedAnswers}, scores=${validation.actualCompetitorScores}/${validation.expectedCompetitorScores}, deliverables=${deliverables.status}`);
         await logger.info(message, {
           answers: validation.actualAnswers,
@@ -902,10 +933,13 @@ export async function executePromptRun({
       }
     }
     
-    // Phase 3: Delete checkpoint on successful completion - no longer needed
+    // A late pause must retain its checkpoint even if finalization just returned.
+    const checkpointGuard = await storage.getPromptRun(promptRunId);
     try {
+      if (checkpointGuard?.status === 'done' || checkpointGuard?.status === 'completed_with_errors') {
       await storage.deleteRunCheckpoint(promptRunId);
       console.log(`[PromptRunExecutor] Checkpoint deleted for completed run ${promptRunId}`);
+      }
     } catch (e) {
       console.error('[PromptRunExecutor] Failed to delete checkpoint:', e);
     }
@@ -914,6 +948,16 @@ export async function executePromptRun({
     performanceLogger.endRun(promptRunId);
 
   } catch (error) {
+    if (error instanceof NativeOwnershipError) {
+      const current = await storage.getPromptRun(promptRunId);
+      if (current?.status === 'paused') error = new Error('Job paused');
+      else if (current?.status === 'cancelled') error = new Error('Job cancelled');
+      else if (current?.status === 'error') error = new Error('Run halted by admin disable');
+      else {
+        await logger.warn('Stale native worker stopped without changing the authoritative run state');
+        return;
+      }
+    }
     // Task #79 — "Run halted by admin disable" is thrown by the JobQueue
     // poller when the disable cascade flipped this run/job to 'error'.
     // Honor that terminal state — do NOT downgrade to 'cancelled' or
@@ -983,6 +1027,7 @@ export async function executePromptRun({
     });
     throw error;
   } finally {
+    await nativeWorker?.close();
     // Task #115 — Stop the periodic heartbeat write. Safe to clear even
     // if we threw before reaching the heartbeat ticker.
     clearInterval(heartbeatInterval);

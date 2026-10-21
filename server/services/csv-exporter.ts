@@ -1,3 +1,4 @@
+import { formatNativeAnswerForDisplay } from '../../shared/native-search-display';
 /**
  * CSV Export Service
  * Converts snapshot data into CSV format for Excel/analysis
@@ -338,7 +339,7 @@ export async function streamResponsesCsvToFile(
         model_id: resp.modelId,
         model_name: model?.displayName || '',
         model_vendor: model?.vendor || '',
-        answer: resp.answer,
+        answer: formatNativeAnswerForDisplay(resp.answer, resp.nativeSearchEvidence),
         citation_count: resp.citationCount,
         mention_count: resp.mentionCount,
         ranking_count: resp.rankingCount,
@@ -509,7 +510,7 @@ export function generateCSVExports(
         model_id: resp.modelId,
         model_name: model?.displayName || '',
         model_vendor: model?.vendor || '',
-        answer: resp.answer, // FULL untruncated answer text
+        answer: formatNativeAnswerForDisplay(resp.answer, resp.nativeSearchEvidence),
         citation_count: resp.citationCount,
         mention_count: resp.mentionCount,
         ranking_count: resp.rankingCount,

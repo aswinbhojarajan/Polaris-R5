@@ -1219,6 +1219,7 @@ export class MemStorage implements IStorage {
       deliverablesStatus: run.deliverablesStatus || 'pending',
       deliverablesErrorSummary: run.deliverablesErrorSummary || null,
       deliverablesCompletedAt: run.deliverablesCompletedAt || null,
+      searchConfig: run.searchConfig ?? null,
     };
     this.promptRuns.set(id, newRun);
     return newRun;

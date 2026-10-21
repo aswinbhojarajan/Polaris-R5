@@ -371,6 +371,8 @@ export async function resolveTenant(
 export function requireRole(opts: {
   minRole: UserRole;
   scope: "org" | "client" | "none";
+  /** Trusted resource lookup, never a client-supplied selected-project hint. */
+  resolveClientId?: (req: Request) => Promise<string>;
 }): RequestHandler {
   return async (req, res, next) => {
     try {
@@ -399,10 +401,11 @@ export function requireRole(opts: {
       }
 
       if (opts.scope === "client") {
-        if (!tenant.clientId) {
+        const clientId = opts.resolveClientId ? await opts.resolveClientId(req) : tenant.clientId;
+        if (!clientId) {
           return next(new ApiError({ status: 400, code: "bad_request", message: "clientId is required for this endpoint" }));
         }
-        const role = await getUserRoleForClient(userId, tenant.clientId);
+        const role = await getUserRoleForClient(userId, clientId);
         if (!roleAtLeast(role, opts.minRole)) {
           return next(new ApiError({ status: 403, code: "forbidden", message: `Forbidden: ${opts.minRole}+ role required` }));
         }

@@ -17,6 +17,7 @@ export interface WorkloadMetrics {
   promptCount: number;
   modelCount: number;
   competitorCount?: number;
+  webSearchEnabled?: boolean;
 }
 
 // Configuration constants - Phase 2 updated values
@@ -59,7 +60,7 @@ export function calculateJobTimeout(metrics: WorkloadMetrics): number {
   
   // Phase 2: New formula with proper per-item and per-competitor timing
   // Time for AI queries: 2 minutes per prompt×model
-  const aiQueryTime = itemCount * PER_PROMPT_MODEL_MS;
+  const aiQueryTime = itemCount * (metrics.webSearchEnabled ? 3 * 60 * 1000 : PER_PROMPT_MODEL_MS);
   
   // Time for competitor scoring: 30 seconds per competitor per item
   const competitorTime = competitorCount * itemCount * PER_COMPETITOR_MS;
